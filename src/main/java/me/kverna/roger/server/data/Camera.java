@@ -1,6 +1,7 @@
 package me.kverna.roger.server.data;
 
 import lombok.Data;
+import lombok.NonNull;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,19 +11,7 @@ import javax.persistence.Id;
 @Entity
 public class Camera {
 
-    @Id
-    @GeneratedValue
-    private Integer id;
-    private String name;
-    private String description;
-    private String host;
+    private @Id @GeneratedValue Integer id;
+    private @NonNull String name;
+    private @NonNull String host;
 }
-
-
-
-
-
-
-
-
-
