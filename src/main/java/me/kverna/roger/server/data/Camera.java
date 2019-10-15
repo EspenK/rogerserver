@@ -10,9 +10,9 @@ import javax.persistence.Id;
 @Entity
 public class Camera {
 
-    private @Id
+    @Id
     @GeneratedValue
-    Integer id;
+    private Integer id;
     private String name;
     private String description;
     private String host;
