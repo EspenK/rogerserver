@@ -11,7 +11,7 @@ import javax.persistence.Id;
 @Entity
 public class Camera {
 
-    private @Id @GeneratedValue Integer id;
-    private @NonNull String name;
-    private @NonNull String host;
+    @Id @GeneratedValue private Integer id;
+    @NonNull private String name;
+    @NonNull private String host;
 }
