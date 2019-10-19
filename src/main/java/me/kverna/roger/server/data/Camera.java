@@ -19,10 +19,10 @@ public class Camera {
     @NonNull private String name;
     @NonNull private String host;
 
-    public String getUrl() {
-        // TODO: add configuration for port (and maybe protocol)
-        int port = 8000;
 
-        return String.format("http://%s:%d", host, port);
+    public String getUrl() {
+        int port = 8080;    // TODO: add configuration for camera port
+
+        return String.format("http://%s:%d/?action=stream", host, port);
     }
 }
