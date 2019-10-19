@@ -3,29 +3,27 @@ package me.kverna.roger.server;
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.data.CameraRepository;
-import org.springframework.core.io.Resource;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Objects;
 
 /**
  * Controller for forwarding a video feed from a camera
+ *
+ * TODO: generify camera argument somehow
  */
-@Controller
-@RequestMapping("video")
+@RestController
+@RequestMapping("/video")
 @Log
 public class VideoFeedController {
 
@@ -35,35 +33,39 @@ public class VideoFeedController {
         this.cameraRepository = cameraRepository;
     }
 
-    @GetMapping("{camera:.+}")
-    public StreamingResponseBody cameraVideoFeed(@PathVariable("camera") String cameraName) throws IOException {
+    @GetMapping("/{camera}")
+    public void cameraVideoFeed(@PathVariable("camera") String cameraName, HttpServletResponse response) throws IOException {
         // Attempt to find a camera object
         Camera camera = cameraRepository.findByName(cameraName);
         if (camera == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Camera not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Camera not found");
         }
 
-        // Attempt to get the video stream
+        log.info(String.format("Trying to connect to %s (%s)", camera.getName(), camera.getUrl()));
+
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Resource> responseEntity;
-        try {
-            responseEntity = restTemplate.exchange(camera.getUrl(), HttpMethod.GET, null, Resource.class);
-        } catch (ResourceAccessException e) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Could not access camera video feed.");
-        }
+        response.setStatus(HttpStatus.OK.value());
 
-        InputStream inputStream = Objects.requireNonNull(responseEntity.getBody()).getInputStream();
-
-        return (outputStream -> readAndWrite(inputStream, outputStream));
+        restTemplate.execute(
+                camera.getUrl(),
+                HttpMethod.GET,
+                (ClientHttpRequest requestCallback) -> {
+                },
+                responseExtractor -> {
+                    IOUtils.copy(responseExtractor.getBody(), response.getOutputStream());
+                    return null;
+                });
     }
 
-    private void readAndWrite(final InputStream is, OutputStream os) throws IOException {
-        byte[] data = new byte[2048];
-        int read;
-        while ((read = is.read(data)) > 0) {
-            os.write(data, 0, read);
+    @GetMapping("/{camera}/info")
+    public Camera cameraInfo(@PathVariable("camera") String cameraName) {
+        // Attempt to find a camera object
+        Camera camera = cameraRepository.findByName(cameraName);
+        if (camera == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Camera not found");
         }
-        os.flush();
+
+        return camera;
     }
 }
 
