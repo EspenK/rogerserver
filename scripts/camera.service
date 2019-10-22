@@ -1,0 +1,13 @@
+[Unit]
+Description=camera
+After=multi-user.target
+
+[Service]
+User=pi
+Restart=always
+Type=simple
+ExecStart=/usr/bin/python3 -u /home/pi/aiohttpstream.py
+
+[Install]
+WantedBy=multi-user.target
+
