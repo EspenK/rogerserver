@@ -1,0 +1,144 @@
+/*
+general
+ */
+
+body {
+    font-family: lucida helvetica, sans-serif;
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+/*
+helpers
+ */
+
+.shadow {
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.padded {
+    padding: 0.5em;
+}
+
+.large {
+    width: 100%;
+}
+
+.medium {
+    width: 64%;
+}
+
+.small {
+    width: 34%;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.clear {
+    clear: both;
+}
+
+.center {
+    margin: auto;
+}
+
+.textCenter {
+    text-align: center;
+}
+
+/*
+nav
+ */
+
+.logoText {
+    font-size: 2em;
+    padding: 0 0.2em;
+    color: black;
+}
+
+nav .right {
+    padding: 0.8em;
+}
+
+/*
+form
+ */
+
+form {
+    max-width: 900px;
+    margin: auto;
+}
+
+input {
+    font-size: 1em;
+}
+
+input[type=checkbox], input[type=radio] {
+    width: 5%;
+}
+
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=number],
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #eee;
+    border-style: none;
+    border-left: 3px dodgerblue solid;
+    padding-left: 0.5em;
+    line-height: 3em;
+}
+
+input[type=button] {
+    width: 100%;
+}
+
+textarea {
+    vertical-align: top;
+    height: 10em;
+}
+
+button,
+input[type=button] {
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    color: white;
+    background-color: dodgerblue;
+}
+
+button {
+    font-size: 1em;
+}
+
+input:valid {
+}
+
+input:invalid {
+    border-left: 3px crimson solid;
+}
+
+/*
+input[required]{
+    background-image: radial-gradient(crimson 45%, transparent 50%);
+    background-size: 1em 1em;
+    background-position: right top;
+    background-repeat: no-repeat;
+    box-shadow: none;
+}
+*/
+
+form div {
+    margin-top: 0.75em;
+}
