@@ -3,10 +3,12 @@ package me.kverna.roger.server.controller;
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.service.CameraService;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 
 /**
  * Controller for forwarding a video feed from a camera
@@ -22,23 +24,11 @@ public class VideoFeedController {
     }
 
     @GetMapping("/{camera}")
-    public void cameraVideoFeed(@PathVariable("camera") String cameraName, HttpServletResponse response) {
+    public StreamingResponseBody cameraVideoFeed(@PathVariable("camera") String cameraName) {
         Camera camera = cameraService.findCamera(cameraName);
+        InputStream cameraStream = camera.getStream();
 
-        log.info(String.format("Trying to connect to %s (%s)", camera.getName(), camera.getUrl()));
-
-        /*RestTemplate restTemplate = new RestTemplate();
-        response.setStatus(HttpStatus.OK.value());
-
-        restTemplate.execute(
-                camera.getUrl(),
-                HttpMethod.GET,
-                (ClientHttpRequest requestCallback) -> {
-                },
-                responseExtractor -> {
-                    IOUtils.copy(responseExtractor.getBody(), response.getOutputStream());
-                    return null;
-                });*/
+        return outputStream -> IOUtils.copy(cameraStream, outputStream);
     }
 
     @GetMapping("/{camera}/info")

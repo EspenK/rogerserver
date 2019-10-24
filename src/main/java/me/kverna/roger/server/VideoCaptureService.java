@@ -2,6 +2,7 @@ package me.kverna.roger.server;
 
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
+import me.kverna.roger.server.service.CameraService;
 
 import java.io.IOException;
 import java.net.URL;
@@ -14,7 +15,7 @@ public class VideoCaptureService implements Runnable {
 
     private boolean processing = true;
 
-    public VideoCaptureService(Camera camera) throws IOException {
+    public VideoCaptureService(CameraService cameraService, Camera camera) throws IOException {
         this.camera = camera;
 
         // Parse the camera URL and open a connection
@@ -22,8 +23,8 @@ public class VideoCaptureService implements Runnable {
         log.info(String.format("Opening connection for %s: %s", camera.getName(), url));
         URLConnection connection = url.openConnection();
 
-        // Route the input stream to the camera object
-        camera.setStream(connection.getInputStream());
+        // Set the camera stream
+        cameraService.setCameraStream(camera, connection.getInputStream());
     }
 
     public synchronized void stop() {
