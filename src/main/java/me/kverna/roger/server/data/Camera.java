@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Transient;
+import java.io.InputStream;
 
 @Entity
 @Data
@@ -19,10 +21,11 @@ public class Camera {
     @NonNull private String name;
     @NonNull private String host;
 
+    @Transient private InputStream stream;
 
     public String getUrl() {
         int port = 8080;    // TODO: add configuration for camera port
 
-        return String.format("http://%s:%d/?action=stream", host, port);
+        return String.format("http://%s:%d/stream.mjpg", host, port);
     }
 }
