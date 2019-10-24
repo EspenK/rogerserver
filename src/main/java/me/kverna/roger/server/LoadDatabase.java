@@ -22,7 +22,7 @@ public class LoadDatabase {
     CommandLineRunner addTestCamera(CameraRepository repository) {
         return args -> addEntities(repository, new Camera[]{
                 new Camera("rogercam1", "rogercam1"),
-                new Camera("rogercam2", "rogercam2")
+                //new Camera("rogercam2", "rogercam2")
         });
     }
 }
