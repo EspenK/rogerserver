@@ -10,7 +10,7 @@ function _showCamera(container) {
     let section = document.createElement('section');
     section.innerHTML = `
     <h1>${myCamera}</h1>
-    <img src="/api/camera/${myCamera}">
+    <img src="/api/video/${myCamera}">
     `;
     container.appendChild(section);
 }
