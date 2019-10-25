@@ -33,8 +33,12 @@ public class VideoCaptureService implements Runnable {
 
     @Override
     public void run() {
-        /*while (processing) {
-
-        }*/
+        while (processing) {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                stop();
+            }
+        }
     }
 }

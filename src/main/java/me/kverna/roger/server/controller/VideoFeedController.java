@@ -6,8 +6,9 @@ import me.kverna.roger.server.service.CameraService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -24,11 +25,18 @@ public class VideoFeedController {
     }
 
     @GetMapping("/{camera}")
-    public StreamingResponseBody cameraVideoFeed(@PathVariable("camera") String cameraName) {
+    public void cameraVideoFeed(@PathVariable("camera") String cameraName, HttpServletResponse response) {
         Camera camera = cameraService.findCamera(cameraName);
         InputStream cameraStream = camera.getStream();
 
-        return outputStream -> IOUtils.copy(cameraStream, outputStream);
+        response.setStatus(200);
+        response.addHeader("Content-Type", "multipart/x-mixed-replace; boundary=FRAME");
+
+        try {
+            IOUtils.copy(cameraStream, response.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @GetMapping("/{camera}/info")
@@ -36,4 +44,3 @@ public class VideoFeedController {
         return cameraService.findCamera(cameraName);
     }
 }
-
