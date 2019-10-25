@@ -1,4 +1,7 @@
-let myCamera = "rogercam1";
+let myCamera = {
+    'name': 'rogercam1',
+    'description': 'Heftig kamera på stua til Geir'
+};
 
 function showCamera() {
     waitForElementFirst('cameraContainer', 50, _showCamera)
@@ -9,8 +12,9 @@ function _showCamera(container) {
 
     let section = document.createElement('section');
     section.innerHTML = `
-    <h1>${myCamera}</h1>
-    <img src="/api/video/${myCamera}">
+    <img alt="${myCamera}" src="/api/video/${myCamera.name}">
+    <div class="padded title">${myCamera.name}</div>
+    <div class="padded">${myCamera.description}</div>
     `;
     container.appendChild(section);
 }
