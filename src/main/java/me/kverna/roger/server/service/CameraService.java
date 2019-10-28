@@ -4,6 +4,8 @@ import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.data.CameraRepository;
 import me.kverna.roger.server.video.VideoFeedListener;
 import me.kverna.roger.server.video.VideoFeedService;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,14 +20,18 @@ public class CameraService {
 
     private CameraRepository cameraRepository;
     private Map<Camera, VideoFeedService> captureServices;
+    private TaskExecutor serviceExecutor;
 
-    public CameraService(CameraRepository cameraRepository) {
+    public CameraService(CameraRepository cameraRepository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor) {
         this.cameraRepository = cameraRepository;
         this.captureServices = new HashMap<>();
+        this.serviceExecutor = serviceExecutor;
     }
 
-    public void setCaptureService(Camera camera, VideoFeedService service) {
+    public void startCaptureService(Camera camera) {
+        VideoFeedService service = new VideoFeedService(camera);
         captureServices.put(camera, service);
+        serviceExecutor.execute(service);
     }
 
     public void addConnection(Camera camera, VideoFeedListener listener) {
@@ -42,7 +48,14 @@ public class CameraService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("A camera with host %s and port %d already exists", camera.getHost(), camera.getPort()));
         }
 
-        return cameraRepository.save(camera);
+        // TODO: Verify connection
+
+        camera = cameraRepository.save(camera);
+
+        // Start a service for the new camera
+        startCaptureService(camera);
+
+        return camera;
     }
 
     public Camera findCamera(int id) {
@@ -55,7 +68,13 @@ public class CameraService {
     }
 
     public void removeCamera(int id) {
-        cameraRepository.delete(findCamera(id));
+        Camera camera = findCamera(id);
+
+        // Stop and remove the capture service
+        captureServices.get(camera).stop();
+        captureServices.remove(camera);
+
+        cameraRepository.delete(camera);
     }
 
     public List<Camera> findAllCameras() {

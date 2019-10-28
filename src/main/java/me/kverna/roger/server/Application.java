@@ -3,14 +3,9 @@ package me.kverna.roger.server;
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.service.CameraService;
-import me.kverna.roger.server.video.VideoFeedService;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @Log
 @SpringBootApplication
@@ -23,23 +18,16 @@ public class Application {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
+        Application app = context.getBean(Application.class);
+        app.run();
     }
 
-    @Bean(name = "mainExecutor")
-    public TaskExecutor mainExecutor() {
-        return new SimpleAsyncTaskExecutor();
-    }
-
-    @Bean
-    public CommandLineRunner startServices(@Qualifier("mainExecutor") TaskExecutor executor) {
-        return args -> {
-            for (Camera camera : cameraService.findAllCameras()) {
-                VideoFeedService captureService = new VideoFeedService(camera);
-                cameraService.setCaptureService(camera, captureService);
-                executor.execute(captureService);
-            }
-        };
+    private void run() {
+        // Start a service for all cameras
+        for (Camera camera : cameraService.findAllCameras()) {
+            cameraService.startCaptureService(camera);
+        }
     }
 }
 

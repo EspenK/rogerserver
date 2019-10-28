@@ -23,13 +23,13 @@ public class VideoFeedService implements Runnable {
 
     private boolean running = true;
 
-    public VideoFeedService(Camera camera, int bufferSize) throws IOException {
+    public VideoFeedService(Camera camera, int bufferSize) {
         this.camera = camera;
         this.bufferSize = bufferSize;
         this.videoFeedListeners = new ArrayList<>();
     }
 
-    public VideoFeedService(Camera camera) throws IOException {
+    public VideoFeedService(Camera camera) {
         this(camera, 512);
     }
 
@@ -41,7 +41,7 @@ public class VideoFeedService implements Runnable {
         videoFeedListeners.remove(listener);
     }
 
-    private synchronized void stop() {
+    public synchronized void stop() {
         running = false;
     }
 
@@ -116,14 +116,13 @@ public class VideoFeedService implements Runnable {
      */
     private void serveStreamForever() {
         byte[] buffer;
-        boolean serving = true;
 
-        while (serving) {
+        while (running) {
             try {
                 buffer = stream.readNBytes(bufferSize);
                 sendToListeners(buffer);
             } catch (IOException ignored) {
-                serving = false;
+                break;
             }
         }
     }
