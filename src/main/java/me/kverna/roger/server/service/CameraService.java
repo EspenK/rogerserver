@@ -1,9 +1,9 @@
 package me.kverna.roger.server.service;
 
-import me.kverna.roger.server.VideoCaptureService;
-import me.kverna.roger.server.VideoFeedListener;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.data.CameraRepository;
+import me.kverna.roger.server.video.VideoFeedListener;
+import me.kverna.roger.server.video.VideoFeedService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,14 +17,14 @@ import java.util.Optional;
 public class CameraService {
 
     private CameraRepository cameraRepository;
-    private Map<Camera, VideoCaptureService> captureServices;
+    private Map<Camera, VideoFeedService> captureServices;
 
     public CameraService(CameraRepository cameraRepository) {
         this.cameraRepository = cameraRepository;
         this.captureServices = new HashMap<>();
     }
 
-    public void setCaptureService(Camera camera, VideoCaptureService service) {
+    public void setCaptureService(Camera camera, VideoFeedService service) {
         captureServices.put(camera, service);
     }
 

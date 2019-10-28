@@ -1,4 +1,4 @@
-package me.kverna.roger.server;
+package me.kverna.roger.server.video;
 
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -13,26 +13,19 @@ import java.util.Iterator;
 import java.util.List;
 
 @Log
-public class VideoCaptureService implements Runnable {
-
-    @Getter private int bufferSize;
+public class VideoFeedService implements Runnable {
 
     private Camera camera;
+    @Getter private int bufferSize;
     private InputStream stream;
-
     private List<VideoFeedListener> videoFeedListeners;
 
     private boolean processing = true;
 
-    public VideoCaptureService(Camera camera) throws IOException {
-        this(camera, 512);
-    }
-
-    public VideoCaptureService(Camera camera, int bufferSize) throws IOException {
+    public VideoFeedService(Camera camera, int bufferSize) throws IOException {
         this.camera = camera;
         this.bufferSize = bufferSize;
-
-        videoFeedListeners = new ArrayList<>();
+        this.videoFeedListeners = new ArrayList<>();
 
         // Parse the camera URL and open a connection
         URL url = new URL(camera.getLocalStreamUrl());
@@ -43,6 +36,10 @@ public class VideoCaptureService implements Runnable {
         this.stream = connection.getInputStream();
     }
 
+    public VideoFeedService(Camera camera) throws IOException {
+        this(camera, 512);
+    }
+
     public void addListener(VideoFeedListener listener) {
         videoFeedListeners.add(listener);
     }
@@ -51,7 +48,7 @@ public class VideoCaptureService implements Runnable {
         videoFeedListeners.remove(listener);
     }
 
-    public synchronized void stop() {
+    private synchronized void stop() {
         processing = false;
     }
 
@@ -70,13 +67,19 @@ public class VideoCaptureService implements Runnable {
                     if (listener.isAlive()) {
                         listener.process(buffer);
                     } else {
-                        System.out.println("Removed listener");
                         it.remove();
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.severe("Connection to " + camera.getLocalStreamUrl() + " was lost");
+                stop();
             }
+        }
+
+        try {
+            stream.close();
+        } catch (IOException e) {
+            log.severe("Could not close stream for " + camera.getLocalStreamUrl());
         }
     }
 }

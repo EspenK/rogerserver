@@ -1,9 +1,9 @@
 package me.kverna.roger.server.controller;
 
 import lombok.extern.java.Log;
-import me.kverna.roger.server.VideoFeedResponseBody;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.service.CameraService;
+import me.kverna.roger.server.video.VideoFeedResponseBody;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

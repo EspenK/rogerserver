@@ -3,6 +3,7 @@ package me.kverna.roger.server;
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.service.CameraService;
+import me.kverna.roger.server.video.VideoFeedService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -34,7 +35,7 @@ public class Application {
     public CommandLineRunner startServices(@Qualifier("mainExecutor") TaskExecutor executor) {
         return args -> {
             for (Camera camera : cameraService.findAllCameras()) {
-                VideoCaptureService captureService = new VideoCaptureService(camera);
+                VideoFeedService captureService = new VideoFeedService(camera);
                 cameraService.setCaptureService(camera, captureService);
                 executor.execute(captureService);
             }

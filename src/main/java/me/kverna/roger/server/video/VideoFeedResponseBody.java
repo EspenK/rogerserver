@@ -1,4 +1,4 @@
-package me.kverna.roger.server;
+package me.kverna.roger.server.video;
 
 import lombok.ToString;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -35,13 +35,16 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
             }
         } catch (InterruptedException | IOException ignored) {
         } finally {
-            System.out.println("Stopping write");
-            running = false;
+            stop();
         }
     }
 
     @Override
     public boolean isAlive() {
         return running;
+    }
+
+    private synchronized void stop() {
+        running = false;
     }
 }
