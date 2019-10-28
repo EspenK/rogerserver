@@ -142,3 +142,15 @@ input[required]{
 form div {
     margin-top: 0.75em;
 }
+
+section {
+    padding-bottom: 0.7em;
+}
+
+section img {
+    width: 100%;
+}
+
+section .title {
+    font-size: 1.5em;
+}

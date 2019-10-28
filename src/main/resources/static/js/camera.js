@@ -1,16 +1,42 @@
-let myCamera = "rogercam1";
+let cameras = [
+    {
+        'name': 'rogercam1',
+        'description': 'Heftig kamera i stua til Geir'
+    },
+    {
+        'name': 'rogercam2',
+        'description': 'se den kule utsikten da'
+    }
+];
 
-function showCamera() {
-    waitForElementFirst('cameraContainer', 50, _showCamera)
+function showCameraList() {
+    waitForElementFirst('cameraContainer', 50, _showCameraList)
 }
 
-function _showCamera(container) {
-    container.innerHTML = '';
+function _showCameraList(container) {
+    cameras.forEach(showCameraListEntry);
 
-    let section = document.createElement('section');
-    section.innerHTML = `
-    <h1>${myCamera}</h1>
-    <img src="/api/video/${myCamera}">
-    `;
-    container.appendChild(section);
+    function showCameraListEntry(camera) {
+        let section = document.createElement('section');
+        section.onclick = function () {
+            showCamera(camera)
+        };
+
+        section.innerHTML = `
+        <div class="padded title clear">${camera.name}</div>
+        `;
+        container.appendChild(section);
+    }
+
+    function showCamera(camera) {
+        container.innerHTML = '';
+
+        let section = document.createElement('section');
+            section.innerHTML = `
+        <img alt="${camera.name}" src="/api/video/${camera.name}">
+        <div class="padded title clear">${camera.name}</div>
+        <div class="padded">${camera.description}</div>
+        `;
+        container.appendChild(section);
+    }
 }
