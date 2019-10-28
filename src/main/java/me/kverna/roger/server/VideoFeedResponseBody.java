@@ -28,22 +28,19 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
     }
 
     @Override
-    public void writeTo(OutputStream outputStream) throws IOException {
-        while (running) {
-            try {
+    public void writeTo(OutputStream outputStream) {
+        try {
+            while (running) {
                 outputStream.write(queue.take());
-            } catch (InterruptedException e) {
-                running = false;
-            } finally {
-                running = false;
             }
+        } catch (InterruptedException | IOException ignored) {
+        } finally {
+            System.out.println("Stopping write");
+            running = false;
         }
     }
 
-    public boolean isEmpty() {
-        return queue.isEmpty();
-    }
-
+    @Override
     public boolean isAlive() {
         return running;
     }

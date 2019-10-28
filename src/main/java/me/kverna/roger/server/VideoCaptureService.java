@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Log
@@ -59,15 +60,18 @@ public class VideoCaptureService implements Runnable {
         byte[] buffer;
         
         while (processing) {
-            // Read a chunk and send to all listeners
             try {
                 buffer = stream.readNBytes(bufferSize);
-                for (VideoFeedListener listener : videoFeedListeners) {
-                    // Remove closed listeners
+
+                // Send buffer to all listeners and kill dead listeners
+                Iterator<VideoFeedListener> it = videoFeedListeners.iterator();
+                while (it.hasNext()) {
+                    VideoFeedListener listener = it.next();
                     if (listener.isAlive()) {
                         listener.process(buffer);
                     } else {
-                        videoFeedListeners.remove(listener);
+                        System.out.println("Removed listener");
+                        it.remove();
                     }
                 }
             } catch (IOException e) {
