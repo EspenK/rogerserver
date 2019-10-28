@@ -17,14 +17,13 @@ import javax.persistence.Id;
 public class Camera {
 
     @Id @GeneratedValue private Integer id;
-    @NonNull private String name;
     @NonNull private String host;
+    @NonNull private int port;
+    @NonNull private String name;
     @NonNull private String description;
 
     @JsonIgnore
     public String getLocalStreamUrl() {
-        int port = 8080;  // TODO: add configuration for camera port
-
         return String.format("http://%s:%d/stream.mjpg", host, port);
     }
 }

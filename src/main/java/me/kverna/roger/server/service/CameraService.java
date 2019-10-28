@@ -36,13 +36,26 @@ public class CameraService {
         captureServices.get(camera).removeListener(listener);
     }
 
-    public Camera findCamera(String name) {
-        Optional<Camera> camera = cameraRepository.findByName(name);
+    public Camera addCamera(Camera camera) {
+        Optional<Camera> existing = cameraRepository.findByHostAndPort(camera.getHost(), camera.getPort());
+        if (existing.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("A camera with host %s and port %d already exists", camera.getHost(), camera.getPort()));
+        }
+
+        return cameraRepository.save(camera);
+    }
+
+    public Camera findCamera(int id) {
+        Optional<Camera> camera = cameraRepository.findById(id);
         if (camera.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Camera not found with name " + name);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Camera not found with id " + id);
         }
 
         return camera.get();
+    }
+
+    public void removeCamera(int id) {
+        cameraRepository.delete(findCamera(id));
     }
 
     public List<Camera> findAllCameras() {

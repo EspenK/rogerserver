@@ -21,7 +21,7 @@ public class LoadDatabase {
     @Bean
     CommandLineRunner addTestCamera(CameraRepository repository) {
         return args -> addEntities(repository, new Camera[]{
-                new Camera("rogercam1", "rogercam1", "Heftig kamera i stua"),
+                new Camera("rogercam1", 8080, "rogercam1", "Heftig kamera i stua"),
                 //new Camera("rogercam2", "rogercam2")
         });
     }
