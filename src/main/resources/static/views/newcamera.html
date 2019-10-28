@@ -1,0 +1,17 @@
+<form class="padded" id="camera-form" onsubmit="return false">
+    <div>
+        <input id="name" name="name" placeholder="Name" required title="name" type="text">
+    </div>
+    <div>
+        <input id="description" name="description" placeholder="Description" required title="description" type="text">
+    </div>
+    <div>
+        <input id="host" name="host" placeholder="Host" required title="host" type="text">
+    </div>
+    <div>
+        <input id="port" name="port" placeholder="Port" required title="port" type="text">
+    </div>
+    <div>
+        <input onclick="addCamera(this.form)" type="button" value="Add camera">
+    </div>
+</form>
