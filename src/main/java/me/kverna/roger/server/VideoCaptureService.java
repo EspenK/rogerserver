@@ -35,7 +35,7 @@ public class VideoCaptureService implements Runnable {
         videoFeedListeners = new ArrayList<>();
 
         // Parse the camera URL and open a connection
-        URL url = new URL(camera.getUrl());
+        URL url = new URL(camera.getLocalStreamUrl());
         log.info(String.format("Opening connection for %s: %s", camera.getName(), url));
         URLConnection connection = url.openConnection();
 
