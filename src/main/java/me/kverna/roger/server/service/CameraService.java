@@ -1,12 +1,13 @@
 package me.kverna.roger.server.service;
 
+import me.kverna.roger.server.VideoCaptureService;
+import me.kverna.roger.server.VideoFeedListener;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.data.CameraRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,32 +17,23 @@ import java.util.Optional;
 public class CameraService {
 
     private CameraRepository cameraRepository;
-    private Map<Camera, InputStream> streams;
+    private Map<Camera, VideoCaptureService> captureServices;
 
     public CameraService(CameraRepository cameraRepository) {
         this.cameraRepository = cameraRepository;
-        streams = new HashMap<>();
+        this.captureServices = new HashMap<>();
     }
 
-    public void setCameraStream(Camera camera, InputStream stream) {
-        streams.put(camera, stream);
+    public void setCaptureService(Camera camera, VideoCaptureService service) {
+        captureServices.put(camera, service);
     }
 
-    private Camera addStream(Camera camera) {
-        if (streams.containsKey(camera)) {
-            camera.setStream(streams.get(camera));
-        }
-
-        return camera;
+    public void addConnection(Camera camera, VideoFeedListener listener) {
+        captureServices.get(camera).addListener(listener);
     }
 
-    public Camera findCamera(int id) {
-        Optional<Camera> camera = cameraRepository.findById(id);
-        if (camera.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Camera not found with id " + id);
-        }
-
-        return addStream(camera.get());
+    public void removeConnection(Camera camera, VideoFeedListener listener) {
+        captureServices.get(camera).removeListener(listener);
     }
 
     public Camera findCamera(String name) {
@@ -50,7 +42,7 @@ public class CameraService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Camera not found with name " + name);
         }
 
-        return addStream(camera.get());
+        return camera.get();
     }
 
     public List<Camera> findAllCameras() {

@@ -34,7 +34,9 @@ public class Application {
     public CommandLineRunner startServices(@Qualifier("mainExecutor") TaskExecutor executor) {
         return args -> {
             for (Camera camera : cameraService.findAllCameras()) {
-                executor.execute(new VideoCaptureService(cameraService, camera));
+                VideoCaptureService captureService = new VideoCaptureService(camera);
+                cameraService.setCaptureService(camera, captureService);
+                executor.execute(captureService);
             }
         };
     }
