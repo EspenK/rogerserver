@@ -23,8 +23,10 @@ public class Application {
         app.run();
     }
 
+    /**
+     * Start a service for all cameras upon startup.
+     */
     private void run() {
-        // Start a service for all cameras
         for (Camera camera : cameraService.findAllCameras()) {
             cameraService.startCaptureService(camera);
         }

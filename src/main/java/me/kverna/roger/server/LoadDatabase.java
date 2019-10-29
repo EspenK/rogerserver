@@ -8,8 +8,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-@Configuration
+/**
+ * Loads a development configuration of the database with predefined cameras.
+ */
 @Log
+@Configuration
 public class LoadDatabase {
 
     private static <T> void addEntities(JpaRepository<T, ?> repository, T[] entities) {

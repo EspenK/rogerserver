@@ -25,7 +25,7 @@ public class CameraController {
     }
 
     @GetMapping
-    public List<Camera> allCameras() {
+    public List<Camera> getAllCameras() {
         return cameraService.findAllCameras();
     }
 
@@ -48,11 +48,11 @@ public class CameraController {
     public ResponseEntity<VideoFeedResponseBody> cameraVideoFeed(@PathVariable("camera") int cameraId, HttpServletResponse response) {
         Camera camera = cameraService.findCamera(cameraId);
 
-        response.setContentType("multipart/x-mixed-replace; boundary=FRAME");
-
+        // Create a response stream and add it to the associated background service
         VideoFeedResponseBody stream = new VideoFeedResponseBody();
         cameraService.addConnection(camera, stream);
 
+        response.setContentType("multipart/x-mixed-replace; boundary=FRAME");
         return new ResponseEntity<>(stream, HttpStatus.OK);
     }
 }

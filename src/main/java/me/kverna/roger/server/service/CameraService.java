@@ -15,6 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Service layer for handling of Camera instances.
+ * <p>
+ * This service has general repository functions, and handles executing the
+ * background video stream services for each Camera instance. Background
+ * services are executed automatically when cameras are created, and can
+ * be connected to using `addConnection`. Stopping of a service is handled
+ * upon deletion of a Camera using `removeCamera`.
+ */
 @Service
 public class CameraService {
 
@@ -28,20 +37,33 @@ public class CameraService {
         this.serviceExecutor = serviceExecutor;
     }
 
+    /**
+     * Executes a background service for the given camera and assigns it for handling listeners.
+     *
+     * @param camera the camera to start the new service with
+     */
     public void startCaptureService(Camera camera) {
         VideoFeedService service = new VideoFeedService(camera);
         captureServices.put(camera, service);
         serviceExecutor.execute(service);
     }
 
+    /**
+     * Assign a listener to the background service for the given camera.
+     *
+     * @param camera the camera that has the desired service
+     * @param listener the new listener to assign to the camera's service
+     */
     public void addConnection(Camera camera, VideoFeedListener listener) {
         captureServices.get(camera).addListener(listener);
     }
 
-    public void removeConnection(Camera camera, VideoFeedListener listener) {
-        captureServices.get(camera).removeListener(listener);
-    }
-
+    /**
+     * Create a new Camera entity, and start a background service for it.
+     *
+     * @param camera the new Camera instance
+     * @return the new Camera instance after saving to the repository
+     */
     public Camera addCamera(Camera camera) {
         Optional<Camera> existing = cameraRepository.findByHostAndPort(camera.getHost(), camera.getPort());
         if (existing.isPresent()) {
@@ -58,6 +80,12 @@ public class CameraService {
         return camera;
     }
 
+    /**
+     * Find a Camera using the given id.
+     *
+     * @param id the id associated with the Camera
+     * @return the found Camera
+     */
     public Camera findCamera(int id) {
         Optional<Camera> camera = cameraRepository.findById(id);
         if (camera.isEmpty()) {
@@ -67,6 +95,11 @@ public class CameraService {
         return camera.get();
     }
 
+    /**
+     * Remove a Camera with the given id.
+     *
+     * @param id the id of the Camera to remove
+     */
     public void removeCamera(int id) {
         Camera camera = findCamera(id);
 
@@ -77,6 +110,11 @@ public class CameraService {
         cameraRepository.delete(camera);
     }
 
+    /**
+     * Return a list of all cameras in the repository.
+     *
+     * @return a list of all cameras in the repository
+     */
     public List<Camera> findAllCameras() {
         return cameraRepository.findAll();
     }
