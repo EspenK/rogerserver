@@ -1,8 +1,9 @@
+import time
+
 import argparse
 import io
-import threading
-
 import picamera
+import threading
 from aiohttp import web, MultipartWriter
 
 
@@ -85,9 +86,13 @@ def main():
     args = parser.parse_args()
 
     with picamera.PiCamera(resolution=args.resolution, framerate=args.framerate) as camera:
-        # TODO: define the streaming output
-        camera.start_recording(stream, format='mjpeg')
         camera.rotation = args.rotation
+
+        # Warm up the camera
+        camera.start_preview()
+        time.sleep(2)
+
+        camera.start_recording(stream, format='mjpeg')
 
         app = web.Application()
         app.add_routes(routes)
