@@ -1,6 +1,7 @@
 package me.kverna.roger.server.controller;
 
 import lombok.extern.java.Log;
+import me.kverna.roger.server.annotation.ApiController;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.service.CameraService;
 import me.kverna.roger.server.video.VideoFeedResponseBody;

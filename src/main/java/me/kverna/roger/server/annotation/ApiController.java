@@ -1,4 +1,4 @@
-package me.kverna.roger.server.controller;
+package me.kverna.roger.server.annotation;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.web.bind.annotation.RequestMapping;
