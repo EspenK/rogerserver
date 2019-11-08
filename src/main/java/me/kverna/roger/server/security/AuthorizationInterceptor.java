@@ -34,8 +34,15 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
+        String token;
+        String tokenParameter = request.getParameter("token");
+        if (tokenParameter != null) {
+            token = tokenParameter;
+        } else {
+            token = parseToken(request);
+        }
+
         // Attempt to find a JSON web token in the request headers
-        String token = parseToken(request);
         if (token == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
