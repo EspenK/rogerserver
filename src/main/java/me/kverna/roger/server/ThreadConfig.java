@@ -6,7 +6,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 
 /**
- * Configuration for the executors used in CameraService to start VideoFeedService.
+ * Configuration for the executors used in CameraService to start VideoFeedTask.
  */
 @Configuration
 public class ThreadConfig {

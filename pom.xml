@@ -51,6 +51,18 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>net.sf.jipcam</groupId>
+      <artifactId>jipcam</artifactId>
+      <version>0.9.1</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>javacv-platform</artifactId>
+      <version>1.5.2</version>
+    </dependency>
   </dependencies>
 
   <properties>
