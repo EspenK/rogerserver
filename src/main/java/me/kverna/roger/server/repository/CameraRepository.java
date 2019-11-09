@@ -1,5 +1,6 @@
-package me.kverna.roger.server.data;
+package me.kverna.roger.server.repository;
 
+import me.kverna.roger.server.data.Camera;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

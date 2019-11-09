@@ -1,6 +1,8 @@
 package me.kverna.roger.server.controller;
 
 import lombok.extern.java.Log;
+import me.kverna.roger.server.annotation.ApiController;
+import me.kverna.roger.server.annotation.Authorized;
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.service.CameraService;
 import me.kverna.roger.server.video.VideoFeedResponseBody;
@@ -24,26 +26,31 @@ public class CameraController {
         this.cameraService = cameraService;
     }
 
+    @Authorized
     @GetMapping
     public List<Camera> getAllCameras() {
         return cameraService.findAllCameras();
     }
 
+    @Authorized
     @PostMapping
     public Camera addCamera(@RequestBody Camera camera) {
         return cameraService.addCamera(camera);
     }
 
+    @Authorized
     @GetMapping("/{camera}")
     public Camera getCamera(@PathVariable("camera") int cameraId) {
         return cameraService.findCamera(cameraId);
     }
 
+    @Authorized
     @DeleteMapping("/{camera}")
     public void deleteCamera(@PathVariable("camera") int cameraId) {
         cameraService.removeCamera(cameraId);
     }
 
+    @Authorized
     @GetMapping("/{camera}.mjpg")
     public ResponseEntity<VideoFeedResponseBody> cameraVideoFeed(@PathVariable("camera") int cameraId, HttpServletResponse response) {
         Camera camera = cameraService.findCamera(cameraId);

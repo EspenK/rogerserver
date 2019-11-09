@@ -2,7 +2,7 @@ package me.kverna.roger.server;
 
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
-import me.kverna.roger.server.data.CameraRepository;
+import me.kverna.roger.server.repository.CameraRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +24,7 @@ public class LoadDatabase {
     @Bean
     CommandLineRunner addTestCamera(CameraRepository repository) {
         return args -> addEntities(repository, new Camera[]{
-                new Camera("rogercam1", 8080, "rogercam1", "Heftig kamera i stua"),
+                // new Camera("rogercam1", 8080, "rogercam1", "Heftig kamera i stua"),
                 new Camera("rogercam2", 8080, "rogercam2", "Kamera på kjøkkenet")
         });
     }
