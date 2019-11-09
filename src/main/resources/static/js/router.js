@@ -57,8 +57,5 @@ Router.prototype = {
             xhttp.open('GET', url, true);
             xhttp.send();
         })(this);
-        if (htmlName === 'camera.html') {
-            showCameraList();
-        }
     }
 };

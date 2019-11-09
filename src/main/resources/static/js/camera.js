@@ -3,7 +3,7 @@ function showCameraList() {
 }
 
 async function getCameras() {
-    let response = await fetch('api/camera', {
+    let response = await fetch_secure('api/camera', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -42,7 +42,7 @@ async function _showCameraList(container) {
 
         let section;
         section = document.createElement('section');
-        section.innerHTML = `<img alt="${camera.name}" src="/api/camera/${camera.id}.mjpg">
+        section.innerHTML = `<img alt="${camera.name}" src="/api/camera/${camera.id}.mjpg?token=${localStorage.token}">
         <div class="padded left"><button onclick="" type="button">Edit</button></div><div class="padded right">
         <button onclick="deleteCamera(${camera.id})" type="button">Delete</button></div>
         <div class="padded title clear">${camera.name}</div><div class="padded">${camera.description}</div>`;
@@ -57,7 +57,7 @@ async function addCamera(form) {
         'host': form.host.value,
         'port': parseInt(form.port.value)
     };
-    let response = await fetch('api/camera', {
+    let response = await fetch_secure('api/camera', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -74,7 +74,7 @@ async function addCamera(form) {
 }
 
 async function deleteCamera(id) {
-    let response = await fetch(`api/camera/${id}`, {
+    let response = await fetch_secure(`api/camera/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'

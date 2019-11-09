@@ -26,6 +26,10 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        if (!(handler instanceof HandlerMethod)) {
+            return true;
+        }
+
         HandlerMethod handlerMethod = (HandlerMethod) handler;
 
         // Check if the mapping requires authorization
@@ -34,7 +38,8 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
-        // Attempt to find a JSON web token in the request headers
+
+        // Attempt to find a JSON web token in the request parameters or headers
         String token = parseToken(request);
         if (token == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -54,17 +59,24 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     }
 
     /**
-     * Attempts to find a JSON web token in the request headers.
+     * Attempts to find a JSON web token in the request parameters or headers.
      *
      * @param request the request object
      * @return a pure JSON web token or null if it was not supplied
      */
     private String parseToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token == null || !token.startsWith("Bearer ")) {
-            return null;
+        String token;
+
+        token = request.getParameter("token");
+        if (token != null) {
+            return token;
         }
 
-        return token.replace("Bearer ", "").trim();
+        token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            return token.replace("Bearer ", "").trim();
+        }
+
+        return null;
     }
 }
