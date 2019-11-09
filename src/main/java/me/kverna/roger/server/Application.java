@@ -7,6 +7,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.net.MalformedURLException;
+
 @Log
 @SpringBootApplication
 public class Application {
@@ -28,7 +30,11 @@ public class Application {
      */
     private void run() {
         for (Camera camera : cameraService.findAllCameras()) {
-            cameraService.startCaptureService(camera);
+            try {
+                cameraService.startCaptureService(camera);
+            } catch (MalformedURLException e) {
+                log.severe(String.format("Could not start video service for camera %s with malformed URL: %s", camera, camera.getLocalStreamUrl()));
+            }
         }
     }
 }

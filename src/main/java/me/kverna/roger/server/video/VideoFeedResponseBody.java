@@ -1,6 +1,7 @@
 package me.kverna.roger.server.video;
 
 import lombok.ToString;
+import net.sf.jipcam.axis.MjpegFrame;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
@@ -10,10 +11,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * A StreamingResponseBody implementation that uses data provided by
- * a VideoFeedService using VideoFeedListener.
- * <p>
+ * a VideoFeedTask using VideoFeedListener.
+ *
  * After creation, it should be added as a listener to the desired
- * VideoFeedService. When the OutputStream in `process` is closed,
+ * VideoFeedTask. When the OutputStream in `process` is closed,
  * `isAlive` will return false.
  */
 @ToString
@@ -27,23 +28,23 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
     }
 
     /**
-     * Puts the given data from the VideoFeedService into a queue, which
+     * Puts the given frame from the VideoFeedTask into a queue, which
      * can then be handled by `writeTo`.
      *
-     * @param chunk a chunk of data using the buffer size specified by the VideoFeedService
+     * @param frame a frame of video including the MJPEG boundary header
      */
     @Override
-    public void process(byte[] chunk) {
+    public void process(MjpegFrame frame) {
         try {
-            queue.put(chunk);
+            queue.put(frame.getBytes());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Writes all data from the queue to the OutputStream. It will stop
-     * when the OutputStream is closed.
+     * Writes all video frames from the queue to the OutputStream.
+     * It will stop when the OutputStream is closed.
      *
      * @param outputStream the stream to pass data to
      */
