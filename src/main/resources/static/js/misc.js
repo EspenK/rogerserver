@@ -13,7 +13,7 @@ function waitForElementFirst(element, time, func, arg) {
 }
 
 async function fetch_secure(input, init) {
-    if (!isBearerCached()) {
+    if (!isTokenCached()) {
         return null;
     }
 
@@ -22,7 +22,7 @@ async function fetch_secure(input, init) {
 
     init.withCredentials = true;
     init.credentials = 'include';
-    init.headers.Authorization = 'Bearer ' + localStorage.bearer;
+    init.headers.Authorization = 'Bearer ' + localStorage.token;
 
     return await fetch(input, init);
 }
