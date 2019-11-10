@@ -30,13 +30,15 @@ import java.util.Optional;
 public class CameraService {
 
     private CameraRepository cameraRepository;
-    private Map<Camera, VideoFeedTask> captureServices;
+    private Map<Camera, VideoFeedTask> captureTasks;
     private TaskExecutor serviceExecutor;
+    private NotifyService notifyService;
 
-    public CameraService(CameraRepository cameraRepository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor) {
+    public CameraService(CameraRepository cameraRepository, NotifyService notifyService, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor) {
         this.cameraRepository = cameraRepository;
-        this.captureServices = new HashMap<>();
+        this.captureTasks = new HashMap<>();
         this.serviceExecutor = serviceExecutor;
+        this.notifyService = notifyService;
     }
 
     /**
@@ -45,9 +47,9 @@ public class CameraService {
      * @param camera the camera to start the new task with
      */
     public void startCaptureTask(Camera camera) throws MalformedURLException {
-        VideoFeedTask service = new VideoFeedTask(camera);
-        captureServices.put(camera, service);
-        serviceExecutor.execute(service);
+        VideoFeedTask task = new VideoFeedTask(camera);
+        captureTasks.put(camera, task);
+        serviceExecutor.execute(task);
     }
 
     /**
@@ -57,13 +59,13 @@ public class CameraService {
      * @param listener the new listener to assign to the camera's task
      */
     public void addConnection(Camera camera, VideoFeedListener listener) {
-        captureServices.get(camera).addListener(listener);
+        captureTasks.get(camera).addListener(listener);
     }
 
     public void startDetectionTask(Camera camera) {
-        VideoDetectionTask detectionTask = new VideoDetectionTask();
-        addConnection(camera, detectionTask);
-        serviceExecutor.execute(detectionTask);
+        VideoDetectionTask task = new VideoDetectionTask(camera, notifyService.getNotifier());
+        addConnection(camera, task);
+        serviceExecutor.execute(task);
     }
 
     /**
@@ -88,6 +90,8 @@ public class CameraService {
             cameraRepository.delete(camera);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("The generated URL %s is malformed", camera.getLocalStreamUrl()));
         }
+
+        notifyService.getNotifier().notify(camera.getName(), "A new camera was added");
 
         return camera;
     }
@@ -116,8 +120,8 @@ public class CameraService {
         Camera camera = findCamera(id);
 
         // Stop and remove the capture service
-        captureServices.get(camera).stop();
-        captureServices.remove(camera);
+        captureTasks.get(camera).stop();
+        captureTasks.remove(camera);
 
         cameraRepository.delete(camera);
     }

@@ -2,7 +2,7 @@ package me.kverna.roger.server.controller;
 
 import me.kverna.roger.server.annotation.Authorized;
 import me.kverna.roger.server.data.WebhookUrl;
-import me.kverna.roger.server.service.WebhookUrlService;
+import me.kverna.roger.server.service.NotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +18,10 @@ import java.util.List;
 @RequestMapping(path = "/webhooks")
 public class WebhookUrlController {
 
-    private WebhookUrlService service;
+    private NotifyService service;
 
     @Autowired
-    public WebhookUrlController(WebhookUrlService service) {
+    public WebhookUrlController(NotifyService service) {
         this.service = service;
     }
 
@@ -40,7 +40,7 @@ public class WebhookUrlController {
     @Authorized
     @GetMapping
     public List<WebhookUrl> getAllWebhookUrl() {
-        return service.getAllWebhookUrl();
+        return service.getAllWebhookUrls();
     }
 
     @Authorized
