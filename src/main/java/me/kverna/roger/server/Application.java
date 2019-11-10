@@ -37,7 +37,8 @@ public class Application {
                 log.severe(String.format("Could not start video service for camera %s with malformed URL: %s", camera, camera.getLocalStreamUrl()));
             }
 
-
+            // Start task for video detection
+            cameraService.startDetectionTask(camera);
         }
     }
 }

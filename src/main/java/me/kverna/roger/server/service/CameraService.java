@@ -2,6 +2,7 @@ package me.kverna.roger.server.service;
 
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.repository.CameraRepository;
+import me.kverna.roger.server.video.VideoDetectionTask;
 import me.kverna.roger.server.video.VideoFeedListener;
 import me.kverna.roger.server.video.VideoFeedTask;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -57,6 +58,12 @@ public class CameraService {
      */
     public void addConnection(Camera camera, VideoFeedListener listener) {
         captureServices.get(camera).addListener(listener);
+    }
+
+    public void startDetectionTask(Camera camera) {
+        VideoDetectionTask detectionTask = new VideoDetectionTask();
+        addConnection(camera, detectionTask);
+        serviceExecutor.execute(detectionTask);
     }
 
     /**
