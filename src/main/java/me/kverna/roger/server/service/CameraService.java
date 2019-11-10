@@ -20,8 +20,8 @@ import java.util.Optional;
  * Service layer for handling of Camera instances.
  *
  * This service has general repository functions, and handles executing the
- * background video stream services for each Camera instance. Background
- * services are executed automatically when cameras are created, and can
+ * background video stream tasks for each Camera instance. Background
+ * tasks are executed automatically when cameras are created, and can
  * be connected to using `addConnection`. Stopping of a service is handled
  * upon deletion of a Camera using `removeCamera`.
  */
@@ -39,28 +39,28 @@ public class CameraService {
     }
 
     /**
-     * Executes a background service for the given camera and assigns it for handling listeners.
+     * Executes a background task for the given camera and assigns it for handling listeners.
      *
-     * @param camera the camera to start the new service with
+     * @param camera the camera to start the new task with
      */
-    public void startCaptureService(Camera camera) throws MalformedURLException {
+    public void startCaptureTask(Camera camera) throws MalformedURLException {
         VideoFeedTask service = new VideoFeedTask(camera);
         captureServices.put(camera, service);
         serviceExecutor.execute(service);
     }
 
     /**
-     * Assign a listener to the background service for the given camera.
+     * Assign a listener to the background task for the given camera.
      *
-     * @param camera the camera that has the desired service
-     * @param listener the new listener to assign to the camera's service
+     * @param camera the camera that has the desired task
+     * @param listener the new listener to assign to the camera's task
      */
     public void addConnection(Camera camera, VideoFeedListener listener) {
         captureServices.get(camera).addListener(listener);
     }
 
     /**
-     * Create a new Camera entity, and start a background service for it.
+     * Create a new Camera entity, and start a background task for it.
      *
      * @param camera the new Camera instance
      * @return the new Camera instance after saving to the repository
@@ -71,14 +71,14 @@ public class CameraService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("A camera with host %s and port %d already exists", camera.getHost(), camera.getPort()));
         }
 
-        // TODO: Verify connection
-
         camera = cameraRepository.save(camera);
 
-        // Start a service for the new camera
+        // Start a background task for the new camera
         try {
-            startCaptureService(camera);
+            startCaptureTask(camera);
         } catch (MalformedURLException e) {
+            // FIXME: at this point, no transactions to the database should be performed
+            cameraRepository.delete(camera);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("The generated URL %s is malformed", camera.getLocalStreamUrl()));
         }
 
