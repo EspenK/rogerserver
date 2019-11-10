@@ -55,7 +55,7 @@ public class CameraController {
     public ResponseEntity<VideoFeedResponseBody> cameraVideoFeed(@PathVariable("camera") int cameraId, HttpServletResponse response) {
         Camera camera = cameraService.findCamera(cameraId);
 
-        // Create a response stream and add it to the associated background service
+        // Create a response stream and add it to the associated background task
         VideoFeedResponseBody stream = new VideoFeedResponseBody();
         cameraService.addConnection(camera, stream);
 
