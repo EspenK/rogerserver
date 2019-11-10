@@ -41,7 +41,9 @@ async function handleSignIn(form) {
         let token = await response.headers.get('Authorization');
         token = token.replace('Bearer ', '');
         localStorage.setItem('token', token);
+
         await updateNavUser();
+        await showCameraList();
         location.href = '#camera';
     }
 }

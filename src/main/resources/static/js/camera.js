@@ -22,7 +22,9 @@ async function getCameras() {
 async function _showCameraList(container) {
     container.innerHTML = `
         <div class="padded">
-        <button class="large" onclick="location.href='#newcamera'" type="button">Add a new camera</button></div>`;
+        <button class="large" onclick="location.href='#newcamera'" type="button">Add a new camera</button></div>
+        <div class="padded">
+        <button class="large" onclick="location.href='#newwebhook'" type="button">Add a new webhook url</button></div>`;
 
     let cameras = await getCameras();
     cameras.forEach(showCameraListEntry);
@@ -74,15 +76,11 @@ async function addCamera(form) {
 }
 
 async function deleteCamera(id) {
-    let response = await fetch_secure(`api/camera/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
+    let response = await fetch_secure(`api/camera/${id}`, {method: 'DELETE'});
+
     if (response.status === 200) {
         location.href = '#camera';
     } else {
-        console.log(await response.json().message())
+        console.log(await response.json().message);
     }
 }
