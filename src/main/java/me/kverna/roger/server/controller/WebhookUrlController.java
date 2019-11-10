@@ -12,32 +12,40 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "/webhooks")
 public class WebhookUrlController {
 
-    private WebhookUrlService webhookUrlService;
+    private WebhookUrlService service;
 
     @Autowired
-    public WebhookUrlController(WebhookUrlService webhookUrlService) {
-        this.webhookUrlService = webhookUrlService;
+    public WebhookUrlController(WebhookUrlService service) {
+        this.service = service;
     }
 
     @Authorized
     @PostMapping
     public void createWebhookUrl(@RequestBody WebhookUrl webhookUrl) {
-        webhookUrlService.createWebhookUrl(webhookUrl);
+        service.createWebhookUrl(webhookUrl);
     }
 
     @Authorized
     @DeleteMapping("/{id}")
     public void deleteWebhookUrl(@PathVariable Long id) {
-        webhookUrlService.deleteWebhookUrl(webhookUrlService.getWebhookUrl(id));
+        service.deleteWebhookUrl(service.getWebhookUrl(id));
+    }
+
+    @Authorized
+    @GetMapping
+    public List<WebhookUrl> getAllWebhookUrl() {
+        return service.getAllWebhookUrl();
     }
 
     @Authorized
     @GetMapping("/{id}")
     public WebhookUrl getWebhookUrl(@PathVariable Long id) {
-        return webhookUrlService.getWebhookUrl(id);
+        return service.getWebhookUrl(id);
     }
 }
