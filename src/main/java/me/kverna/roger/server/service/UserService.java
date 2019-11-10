@@ -48,7 +48,7 @@ public class UserService {
     public Optional<User> getUser(Long id) {
         Optional<User> user = repository.findById(id);
         if (user.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         return user;

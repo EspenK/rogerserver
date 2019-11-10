@@ -6,7 +6,8 @@
             new Route('signin', 'signin.html'),
             new Route('signup', 'signup.html'),
             new Route('camera', 'camera.html', true),
-            new Route('newcamera', 'newcamera.html')
+            new Route('newcamera', 'newcamera.html'),
+            new Route('newwebhook', 'newwebhook.html')
         ]);
     }
 
