@@ -63,7 +63,7 @@ public class CameraService {
     }
 
     public void startDetectionTask(Camera camera) {
-        VideoDetectionTask task = new VideoDetectionTask(camera, notifyService.getNotifier());
+        VideoDetectionTask task = new VideoDetectionTask(camera, notifyService);
         addConnection(camera, task);
         serviceExecutor.execute(task);
     }
@@ -91,7 +91,7 @@ public class CameraService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("The generated URL %s is malformed", camera.getLocalStreamUrl()));
         }
 
-        notifyService.getNotifier().notify(camera.getName(), "A new camera was added");
+        notifyService.notify(camera.getName(), "A new camera was added");
 
         return camera;
     }

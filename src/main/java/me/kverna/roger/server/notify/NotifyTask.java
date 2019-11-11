@@ -18,8 +18,9 @@ public class NotifyTask implements Runnable {
 
     @Override
     public void run() {
+        RestTemplate restTemplate = new RestTemplate();
+
         for (WebhookUrl webhookUrl : webhookUrls) {
-            RestTemplate restTemplate = new RestTemplate();
             restTemplate.postForObject(webhookUrl.getUrl(), webhook, Webhook.class);
         }
     }
