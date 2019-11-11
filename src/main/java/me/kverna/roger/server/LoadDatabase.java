@@ -2,7 +2,11 @@ package me.kverna.roger.server;
 
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
+import me.kverna.roger.server.data.User;
+import me.kverna.roger.server.data.WebhookUrl;
 import me.kverna.roger.server.repository.CameraRepository;
+import me.kverna.roger.server.repository.UserRepository;
+import me.kverna.roger.server.repository.WebhookUrlRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +30,20 @@ public class LoadDatabase {
         return args -> addEntities(repository, new Camera[]{
                 new Camera("rogercam1", 8080, "rogercam1", "Heftig kamera i stua"),
                 // new Camera("rogercam2", 8080, "rogercam2", "Kamera på kjøkkenet")
+        });
+    }
+
+    @Bean
+    CommandLineRunner addTestUser(UserRepository repository) {
+        return args -> addEntities(repository, new User[]{
+                new User("a", "a", "a")
+        });
+    }
+
+    @Bean
+    CommandLineRunner addTestWebhookUrls(WebhookUrlRepository webhookUrlRepository) {
+        return args -> addEntities(webhookUrlRepository, new WebhookUrl[]{
+                new WebhookUrl("")
         });
     }
 }
