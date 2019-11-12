@@ -1,5 +1,7 @@
 package me.kverna.roger.server.video;
 
+import me.kverna.roger.server.data.Camera;
+import me.kverna.roger.server.notify.Notifier;
 import net.sf.jipcam.axis.MjpegFrame;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.opencv.opencv_core.CvMemStorage;
@@ -30,9 +32,15 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
     private long timeDetected;
     private boolean circleWasDetected = false;
 
-    public VideoDetectionTask() {
+    private Camera camera;
+    private Notifier notifier;
+
+    public VideoDetectionTask(Camera camera, Notifier notifier) {
         this.frames = new LinkedBlockingQueue<>();
         this.timeDetected = 0;
+
+        this.camera = camera;
+        this.notifier = notifier;
     }
 
     private boolean canDetect() {
@@ -72,7 +80,7 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
                 if (circles > 0) {
                     // Notify when circles are detected, and was not previously detected
                     if (!circleWasDetected) {
-                        // TODO: send webhook post
+                        notifier.notify(camera.getName(), "Circle detected.");
                         System.out.println(String.format("Detected %d circles!", circles));
                     }
 
@@ -84,7 +92,7 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
                     frames.clear();
                 } else if (circleWasDetected) {
                     // Notify when circles are no longer detected
-                    // TODO: send webhook post
+                    notifier.notify(camera.getName(), ":crab: Circle is gone :crab:");
                     System.out.println("Circles are gone :crab:");
                     circleWasDetected = false;
                 }
