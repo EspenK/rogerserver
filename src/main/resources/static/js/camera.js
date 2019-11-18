@@ -1,4 +1,5 @@
 function showCameraList() {
+    location.href = '#camera';
     waitForElementFirst('cameraContainer', 50, _showCameraList)
 }
 
@@ -20,11 +21,15 @@ async function getCameras() {
 }
 
 async function _showCameraList(container) {
+    container.innerHTML = '';
+
     container.innerHTML = `
         <div class="padded">
-        <button class="large" onclick="location.href='#newcamera'" type="button">Add a new camera</button></div>
-        <div class="padded">
-        <button class="large" onclick="location.href='#newwebhook'" type="button">Add a new webhook url</button></div>`;
+            <button class="small" onclick="location.href='#newcamera'" type="button">Add a new camera</button>
+            <button class="small" onclick="location.href='#newwebhook'" type="button">Add a new webhook url</button>
+            <button class="small" onclick="showWebhookList()" type="button">Show webhook urls</button>
+        </div>
+        </div>`;
 
     let cameras = await getCameras();
     cameras.forEach(showCameraListEntry);
@@ -45,8 +50,7 @@ async function _showCameraList(container) {
         let section;
         section = document.createElement('section');
         section.innerHTML = `<img alt="${camera.name}" src="/api/camera/${camera.id}.mjpg?token=${localStorage.token}">
-        <div class="padded left"><button onclick="" type="button">Edit</button></div><div class="padded right">
-        <button onclick="deleteCamera(${camera.id})" type="button">Delete</button></div>
+        <div class="padded"><button onclick="deleteCamera(${camera.id})" type="button">Delete</button></div>
         <div class="padded title clear">${camera.name}</div><div class="padded">${camera.description}</div>`;
         container.appendChild(section);
     }
@@ -71,7 +75,7 @@ async function addCamera(form) {
         let data = await response.json();
         console.log(data.message);
     } else {
-        location.href = '#camera';
+        showCameraList()
     }
 }
 
@@ -79,7 +83,7 @@ async function deleteCamera(id) {
     let response = await fetch_secure(`api/camera/${id}`, {method: 'DELETE'});
 
     if (response.status === 200) {
-        location.href = '#camera';
+        showCameraList()
     } else {
         console.log(await response.json().message);
     }
