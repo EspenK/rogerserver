@@ -1,12 +1,12 @@
 [Unit]
-Description=camera
+Description=buzzer
 After=multi-user.target
 
 [Service]
 User=root
 Restart=always
 Type=simple
-ExecStart=/usr/bin/python3 -u /home/pi/aiohttpstream.py
+ExecStart=/usr/bin/python3 -u /home/pi/buzzer.py 21
 
 [Install]
 WantedBy=multi-user.target

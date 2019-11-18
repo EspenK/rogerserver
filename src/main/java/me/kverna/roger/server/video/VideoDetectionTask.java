@@ -12,43 +12,42 @@ import org.bytedeco.opencv.opencv_core.Mat;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static org.bytedeco.opencv.global.opencv_core.cvClearMemStorage;
 import static org.bytedeco.opencv.global.opencv_core.cvCreateImage;
 import static org.bytedeco.opencv.global.opencv_core.cvGetSize;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.IMREAD_COLOR;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imdecode;
-import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
+import static org.bytedeco.opencv.global.opencv_imgproc.CV_HOUGH_GRADIENT;
+import static org.bytedeco.opencv.global.opencv_imgproc.cvCvtColor;
+import static org.bytedeco.opencv.global.opencv_imgproc.cvHoughCircles;
+import static org.bytedeco.opencv.global.opencv_imgproc.cvSmooth;
 
 public class VideoDetectionTask implements VideoFeedListener, Runnable {
 
-    private static final int DETECTION_TIMEOUT_SECONDS = 30;
+    private static final int DETECTION_TIMEOUT_FRAMES = 24 * 5;
 
     private BlockingQueue<MjpegFrame> frames;
     private boolean running = true;
 
-    private long timeDetected;
-    private boolean circleWasDetected = false;
+    private int framesSinceDetection;
 
     private Camera camera;
     private Notifier notifier;
 
+    private CvMemStorage storage;
+
     public VideoDetectionTask(Camera camera, Notifier notifier) {
         this.frames = new LinkedBlockingQueue<>();
-        this.timeDetected = 0;
+        this.framesSinceDetection = 1;
+        this.storage = CvMemStorage.create();
 
         this.camera = camera;
         this.notifier = notifier;
     }
 
-    private boolean canDetect() {
-        return timeDetected < (System.currentTimeMillis() - DETECTION_TIMEOUT_SECONDS * 1000);
-    }
-
     @Override
     public void process(MjpegFrame frame) {
-        if (!canDetect()) {
-            return;
-        }
-
         try {
             frames.put(frame);
         } catch (InterruptedException e) {
@@ -73,27 +72,22 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
                 IplImage image = new IplImage(mat);
 
                 int circles = detectCircles(image);
+
                 if (circles > 0) {
-                    // Notify when circles are detected, and was not previously detected
-                    if (!circleWasDetected) {
+                    if (framesSinceDetection > 0) {
                         notifier.notify(camera.getName(), "Circle detected.");
                         notifier.buzz(camera, true);
                         System.out.println(String.format("Detected %d circles!", circles));
                     }
 
-                    // Update time of detection
-                    timeDetected = System.currentTimeMillis();
-                    circleWasDetected = true;
-
-                    // Discard unneeded frames
-                    frames.clear();
-                } else if (circleWasDetected) {
-                    // Notify when circles are no longer detected
+                    framesSinceDetection = -DETECTION_TIMEOUT_FRAMES;
+                } else if (framesSinceDetection == 0) {
                     notifier.notify(camera.getName(), ":crab: Circle is gone :crab:");
                     notifier.buzz(camera, false);
                     System.out.println("Circles are gone :crab:");
-                    circleWasDetected = false;
                 }
+
+                framesSinceDetection++;
             }
         } catch (InterruptedException e) {
             stop();
@@ -101,6 +95,8 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
     }
 
     private int detectCircles(IplImage image) {
+        cvClearMemStorage(storage);
+
         // Initialize grayscale image with 1 channel
         IplImage gray = cvCreateImage(cvGetSize(image), image.depth(), 1);
 
@@ -111,8 +107,7 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         cvSmooth(gray, gray);
 
         // Detect circles in the image
-        CvMemStorage storage = CvMemStorage.create();
-        CvSeq circles = cvHoughCircles(gray, storage, CV_HOUGH_GRADIENT, 1, 100, 100, 100, 15, 500);
+        CvSeq circles = cvHoughCircles(gray, this.storage, CV_HOUGH_GRADIENT, 1, 100, 100, 100, 15, 500);
 
         return circles.total();
     }
