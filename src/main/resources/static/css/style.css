@@ -28,11 +28,11 @@ helpers
 }
 
 .medium {
-    width: 64%;
+    width: 66%;
 }
 
 .small {
-    width: 34%;
+    width: 33%;
 }
 
 .left {
@@ -55,6 +55,14 @@ helpers
     text-align: center;
 }
 
+.red {
+    color: crimson;
+}
+
+.blue {
+    color: dodgerblue;
+}
+
 /*
 nav
  */
@@ -63,6 +71,10 @@ nav
     font-size: 2em;
     padding: 0 0.2em;
     color: black;
+}
+
+nav {
+    height: 49px;
 }
 
 nav .right {

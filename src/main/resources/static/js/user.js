@@ -44,7 +44,6 @@ async function handleSignIn(form) {
 
         await updateNavUser();
         await showCameraList();
-        location.href = '#camera';
     }
 }
 
