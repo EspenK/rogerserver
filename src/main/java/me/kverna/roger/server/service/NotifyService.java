@@ -1,8 +1,10 @@
 package me.kverna.roger.server.service;
 
+import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.data.Embed;
 import me.kverna.roger.server.data.Webhook;
 import me.kverna.roger.server.data.WebhookUrl;
+import me.kverna.roger.server.notify.BuzzerTask;
 import me.kverna.roger.server.notify.Notifier;
 import me.kverna.roger.server.notify.NotifyTask;
 import me.kverna.roger.server.repository.WebhookUrlRepository;
@@ -69,5 +71,10 @@ public class NotifyService implements Notifier {
         webhook.setEmbeds(embeds);
 
         notify(webhook);
+    }
+
+    @Override
+    public void buzz(Camera camera, boolean activate) {
+        serviceExecutor.execute(new BuzzerTask(camera, activate));
     }
 }

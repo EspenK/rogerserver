@@ -26,4 +26,8 @@ public class Camera {
     public String getLocalStreamUrl() {
         return String.format("http://%s:%d/stream.mjpg", host, port);
     }
+
+    public String getBuzzerUrl() {
+        return "http://" + host + ":" + (port + 1) + "/";
+    }
 }
