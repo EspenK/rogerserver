@@ -16,11 +16,7 @@ import static org.bytedeco.opencv.global.opencv_core.cvCreateImage;
 import static org.bytedeco.opencv.global.opencv_core.cvGetSize;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.IMREAD_COLOR;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imdecode;
-import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
-import static org.bytedeco.opencv.global.opencv_imgproc.CV_HOUGH_GRADIENT;
-import static org.bytedeco.opencv.global.opencv_imgproc.cvCvtColor;
-import static org.bytedeco.opencv.global.opencv_imgproc.cvHoughCircles;
-import static org.bytedeco.opencv.global.opencv_imgproc.cvSmooth;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class VideoDetectionTask implements VideoFeedListener, Runnable {
 
@@ -81,6 +77,7 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
                     // Notify when circles are detected, and was not previously detected
                     if (!circleWasDetected) {
                         notifier.notify(camera.getName(), "Circle detected.");
+                        notifier.buzz(camera, true);
                         System.out.println(String.format("Detected %d circles!", circles));
                     }
 
@@ -93,6 +90,7 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
                 } else if (circleWasDetected) {
                     // Notify when circles are no longer detected
                     notifier.notify(camera.getName(), ":crab: Circle is gone :crab:");
+                    notifier.buzz(camera, false);
                     System.out.println("Circles are gone :crab:");
                     circleWasDetected = false;
                 }
