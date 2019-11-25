@@ -23,11 +23,17 @@ public class Camera {
     @NonNull private String description;
 
     @JsonIgnore
-    public String getLocalStreamUrl() {
-        return String.format("http://%s:%d/stream.mjpg", host, port);
+    private String getLocalUrl() {
+        return String.format("http://%s:%d/", host, port);
     }
 
-    public String getBuzzerUrl() {
-        return "http://" + host + ":" + (port + 1) + "/";
+    @JsonIgnore
+    public String getLocalStreamUrl() {
+        return getLocalUrl() + "stream.mjpg";
+    }
+
+    @JsonIgnore
+    public String getBuzzerUrl(boolean activate) {
+        return getLocalUrl() + (activate ? "alert" : "stop");
     }
 }

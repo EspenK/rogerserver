@@ -8,7 +8,7 @@ public class BuzzerTask implements Runnable {
     private String url;
 
     public BuzzerTask(Camera camera, boolean activate) {
-        this.url = camera.getBuzzerUrl() + (activate ? "alert" : "stop");
+        this.url = camera.getBuzzerUrl(activate);
     }
 
     @Override
