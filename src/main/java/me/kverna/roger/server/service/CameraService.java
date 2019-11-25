@@ -94,7 +94,7 @@ public class CameraService {
         // Start a background task for video detection
         startDetectionTask(camera);
 
-        notifyService.notify(camera.getName(), "A new camera was added");
+        notifyService.notify(camera, "A new camera was added");
 
         return camera;
     }
@@ -126,7 +126,7 @@ public class CameraService {
         captureTasks.get(camera).stop();
         captureTasks.remove(camera);
 
-        notifyService.notify(camera.getName(), "Camera removed");
+        notifyService.notify(camera, "Camera removed");
 
         cameraRepository.delete(camera);
     }

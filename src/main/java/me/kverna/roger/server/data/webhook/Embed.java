@@ -1,4 +1,4 @@
-package me.kverna.roger.server.data;
+package me.kverna.roger.server.data.webhook;
 
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +14,6 @@ public class Embed {
     private String title;
     private String description;
     private String url;
+    private Image image;
     @Singular private List<Field> fields;
 }

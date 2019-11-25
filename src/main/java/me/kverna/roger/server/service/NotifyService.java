@@ -1,9 +1,11 @@
 package me.kverna.roger.server.service;
 
 import me.kverna.roger.server.data.Camera;
-import me.kverna.roger.server.data.Embed;
-import me.kverna.roger.server.data.Webhook;
+import me.kverna.roger.server.data.Capture;
 import me.kverna.roger.server.data.WebhookUrl;
+import me.kverna.roger.server.data.webhook.Embed;
+import me.kverna.roger.server.data.webhook.Image;
+import me.kverna.roger.server.data.webhook.Webhook;
 import me.kverna.roger.server.notify.BuzzerTask;
 import me.kverna.roger.server.notify.Notifier;
 import me.kverna.roger.server.notify.NotifyTask;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,18 +28,21 @@ public class NotifyService implements Notifier {
 
     private WebhookUrlRepository repository;
     private TaskExecutor serviceExecutor;
-    private String notifierUrl;
+    private CaptureService captureService;
+    private String baseUrl;
 
     @Autowired
-    public NotifyService(WebhookUrlRepository repository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor, Environment environment) {
+    public NotifyService(WebhookUrlRepository repository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor,
+                         CaptureService captureService, Environment environment) {
         this.repository = repository;
         this.serviceExecutor = serviceExecutor;
+        this.captureService = captureService;
 
         String port = environment.getProperty("server.port");
         String host = InetAddress.getLoopbackAddress().getHostName();
 
         System.out.println(port + ", " + host);
-        this.notifierUrl = String.format("http://%s:%s", host, port);
+        this.baseUrl = String.format("http://%s:%s", host, port);
     }
 
     public void createWebhookUrl(WebhookUrl webhookUrl) {
@@ -68,15 +74,29 @@ public class NotifyService implements Notifier {
     }
 
     @Override
-    public void notify(String title, String description) {
+    public void notify(Camera camera, String description) {
         notify(Webhook.builder()
-                .embed(defaultEmbed().title(title).description(description).build())
+                .embed(defaultEmbed().title(camera.getName()).description(description).build())
                 .build());
     }
 
     @Override
+    public void notify(Camera camera, String description, byte[] captureFrame) {
+        Webhook webhook = Webhook.builder()
+                .embed(defaultEmbed().title(camera.getName()).build())
+                .build();
+
+        serviceExecutor.execute(new NotifyTask(webhook, getAllWebhookUrls(), hook -> {
+            Capture capture = captureService.capture(camera, captureFrame);
+            hook.getEmbeds().get(0).setImage(new Image(String.format("%s/api/capture/%d", baseUrl, capture.getId())));
+        }));
+    }
+
+    @Override
     public void notify(Webhook webhook, WebhookUrl webhookUrl) {
-        serviceExecutor.execute(new NotifyTask(webhook, webhookUrl));
+        List<WebhookUrl> webhookUrls = new ArrayList<>();
+        webhookUrls.add(webhookUrl);
+        serviceExecutor.execute(new NotifyTask(webhook, webhookUrls));
     }
 
     private void notifyWebhookUrlChanged(String title, WebhookUrl webhookUrl) {
@@ -88,7 +108,7 @@ public class NotifyService implements Notifier {
     }
 
     private Embed.EmbedBuilder defaultEmbed() {
-        return Embed.builder().color(2003199).url(notifierUrl);
+        return Embed.builder().color(2003199).url(baseUrl);
     }
 
     @Override

@@ -68,20 +68,21 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
     public void run() {
         try {
             while (running) {
-                Mat mat = imdecode(new Mat(new BytePointer(frames.take().getJpegBytes()), false), IMREAD_COLOR);
+                byte[] frame = frames.take().getJpegBytes();
+                Mat mat = imdecode(new Mat(new BytePointer(frame), false), IMREAD_COLOR);
                 IplImage image = new IplImage(mat);
 
                 int circles = detectCircles(image);
 
                 if (circles > 0) {
                     if (framesSinceDetection > 0) {
-                        notifier.notify(camera.getName(), ":bell: Circle detected.");
+                        notifier.notify(camera, ":bell: Circle detected.", frame);
                         notifier.buzz(camera, true);
                     }
 
                     framesSinceDetection = -DETECTION_TIMEOUT_FRAMES;
                 } else if (framesSinceDetection == 0) {
-                    notifier.notify(camera.getName(), ":no_bell: Circle disappeared.");
+                    notifier.notify(camera, ":no_bell: Circle disappeared.");
                     notifier.buzz(camera, false);
                 }
 
