@@ -12,13 +12,12 @@ import me.kverna.roger.server.notify.NotifyTask;
 import me.kverna.roger.server.repository.WebhookUrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,20 +28,15 @@ public class NotifyService implements Notifier {
     private WebhookUrlRepository repository;
     private TaskExecutor serviceExecutor;
     private CaptureService captureService;
+
+    @Value("${server.base_url}")
     private String baseUrl;
 
     @Autowired
-    public NotifyService(WebhookUrlRepository repository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor,
-                         CaptureService captureService, Environment environment) {
+    public NotifyService(WebhookUrlRepository repository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor, CaptureService captureService) {
         this.repository = repository;
         this.serviceExecutor = serviceExecutor;
         this.captureService = captureService;
-
-        String port = environment.getProperty("server.port");
-        String host = InetAddress.getLoopbackAddress().getHostName();
-
-        System.out.println(port + ", " + host);
-        this.baseUrl = String.format("http://%s:%s", host, port);
     }
 
     public void createWebhookUrl(WebhookUrl webhookUrl) {
@@ -83,12 +77,13 @@ public class NotifyService implements Notifier {
     @Override
     public void notify(Camera camera, String description, byte[] captureFrame) {
         Webhook webhook = Webhook.builder()
-                .embed(defaultEmbed().title(camera.getName()).build())
+                .embed(defaultEmbed().title(camera.getName()).description(description).build())
                 .build();
 
         serviceExecutor.execute(new NotifyTask(webhook, getAllWebhookUrls(), hook -> {
             Capture capture = captureService.capture(camera, captureFrame);
-            hook.getEmbeds().get(0).setImage(new Image(String.format("%s/api/capture/%d", baseUrl, capture.getId())));
+            System.out.println(String.format("%s/api/capture/%d.jpg", baseUrl, capture.getId()));
+            hook.getEmbeds().get(0).setImage(new Image(String.format("%s/api/capture/%d.jpg", baseUrl, capture.getId())));
         }));
     }
 
