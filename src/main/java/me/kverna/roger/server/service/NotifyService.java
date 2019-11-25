@@ -10,12 +10,13 @@ import me.kverna.roger.server.notify.NotifyTask;
 import me.kverna.roger.server.repository.WebhookUrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
+import java.net.InetAddress;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,14 +25,22 @@ public class NotifyService implements Notifier {
 
     private WebhookUrlRepository repository;
     private TaskExecutor serviceExecutor;
+    private String notifierUrl;
 
     @Autowired
-    public NotifyService(WebhookUrlRepository repository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor) {
+    public NotifyService(WebhookUrlRepository repository, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor, Environment environment) {
         this.repository = repository;
         this.serviceExecutor = serviceExecutor;
+
+        String port = environment.getProperty("server.port");
+        String host = InetAddress.getLoopbackAddress().getHostName();
+
+        System.out.println(port + ", " + host);
+        this.notifierUrl = String.format("http://%s:%s", host, port);
     }
 
     public void createWebhookUrl(WebhookUrl webhookUrl) {
+        notifyWebhookUrlChanged("Webhook added", webhookUrl);
         repository.save(webhookUrl);
     }
 
@@ -40,6 +49,7 @@ public class NotifyService implements Notifier {
     }
 
     public void deleteWebhookUrl(WebhookUrl webhookUrl) {
+        notifyWebhookUrlChanged("Webhook deleted", webhookUrl);
         repository.delete(webhookUrl);
     }
 
@@ -59,18 +69,26 @@ public class NotifyService implements Notifier {
 
     @Override
     public void notify(String title, String description) {
-        Webhook webhook = new Webhook();
-        ArrayList<Embed> embeds = new ArrayList<>();
+        notify(Webhook.builder()
+                .embed(defaultEmbed().title(title).description(description).build())
+                .build());
+    }
 
-        Embed embed = new Embed();
-        embed.setColor(2003199);
-        embed.setTitle(title);
-        embed.setDescription(description);
-        embeds.add(embed);
+    @Override
+    public void notify(Webhook webhook, WebhookUrl webhookUrl) {
+        serviceExecutor.execute(new NotifyTask(webhook, webhookUrl));
+    }
 
-        webhook.setEmbeds(embeds);
+    private void notifyWebhookUrlChanged(String title, WebhookUrl webhookUrl) {
+        Webhook webhook = Webhook.builder()
+                .embed(defaultEmbed().title(title).build())
+                .build();
 
-        notify(webhook);
+        notify(webhook, webhookUrl);
+    }
+
+    private Embed.EmbedBuilder defaultEmbed() {
+        return Embed.builder().color(2003199).url(notifierUrl);
     }
 
     @Override

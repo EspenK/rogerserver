@@ -73,7 +73,7 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
     /**
      * Stops the response stream.
      */
-    private synchronized void stop() {
+    public synchronized void stop() {
         running = false;
     }
 }

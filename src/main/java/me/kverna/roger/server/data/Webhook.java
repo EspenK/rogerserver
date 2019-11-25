@@ -1,15 +1,17 @@
 package me.kverna.roger.server.data;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Singular;
 
 import java.util.List;
 
+@Builder
 @Data
-@NoArgsConstructor
 public class Webhook {
+
     private String username;
     private String avatar_url;
     private String content;
-    private List<Embed> embeds;
+    @Singular private List<Embed> embeds;
 }

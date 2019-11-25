@@ -75,16 +75,14 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
 
                 if (circles > 0) {
                     if (framesSinceDetection > 0) {
-                        notifier.notify(camera.getName(), "Circle detected.");
+                        notifier.notify(camera.getName(), ":bell: Circle detected.");
                         notifier.buzz(camera, true);
-                        System.out.println(String.format("Detected %d circles!", circles));
                     }
 
                     framesSinceDetection = -DETECTION_TIMEOUT_FRAMES;
                 } else if (framesSinceDetection == 0) {
-                    notifier.notify(camera.getName(), ":crab: Circle is gone :crab:");
+                    notifier.notify(camera.getName(), ":no_bell: Circle disappeared.");
                     notifier.buzz(camera, false);
-                    System.out.println("Circles are gone :crab:");
                 }
 
                 framesSinceDetection++;
@@ -107,7 +105,7 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         cvSmooth(gray, gray);
 
         // Detect circles in the image
-        CvSeq circles = cvHoughCircles(gray, this.storage, CV_HOUGH_GRADIENT, 1, 100, 100, 100, 15, 500);
+        CvSeq circles = cvHoughCircles(gray, this.storage, CV_HOUGH_GRADIENT, 1, 100, 100, 80, 15, 500);
 
         return circles.total();
     }

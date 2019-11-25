@@ -1,15 +1,18 @@
 package me.kverna.roger.server.data;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Singular;
 
 import java.util.List;
 
+@Builder
 @Data
-@NoArgsConstructor
 public class Embed {
+
     private long color;
     private String title;
     private String description;
-    private List<Field> fields;
+    private String url;
+    @Singular private List<Field> fields;
 }

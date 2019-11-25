@@ -91,6 +91,9 @@ public class CameraService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("The generated URL %s is malformed", camera.getLocalStreamUrl()));
         }
 
+        // Start a background task for video detection
+        startDetectionTask(camera);
+
         notifyService.notify(camera.getName(), "A new camera was added");
 
         return camera;
@@ -122,6 +125,8 @@ public class CameraService {
         // Stop and remove the capture service
         captureTasks.get(camera).stop();
         captureTasks.remove(camera);
+
+        notifyService.notify(camera.getName(), "Camera removed");
 
         cameraRepository.delete(camera);
     }

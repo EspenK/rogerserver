@@ -58,12 +58,19 @@ public class VideoFeedTask implements Runnable {
                 MjpegInputStream mjpegInputStream = new MjpegInputStream(openStream());
                 MjpegFrame frame;
 
-                while ((frame = mjpegInputStream.readMjpegFrame()) != null) {
+                while (running && (frame = mjpegInputStream.readMjpegFrame()) != null) {
                     sendToListeners(frame);
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+
+        log.info(String.format("Stopping %s: %s", camera.getName(), camera.getLocalStreamUrl()));
+
+        // Stop all attached listeners
+        for (VideoFeedListener listener : videoFeedListeners) {
+            listener.stop();
         }
     }
 

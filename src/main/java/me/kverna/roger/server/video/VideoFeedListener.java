@@ -21,4 +21,9 @@ public interface VideoFeedListener {
      * @return true when the listener is being used
      */
     boolean isAlive();
+
+    /**
+     * Called when the attached task stops.
+     */
+    void stop();
 }
