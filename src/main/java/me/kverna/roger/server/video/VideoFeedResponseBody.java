@@ -24,7 +24,7 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
     private boolean running = true;
 
     public VideoFeedResponseBody() {
-        queue = new LinkedBlockingQueue<>();
+        queue = new LinkedBlockingQueue<>(20);
     }
 
     /**

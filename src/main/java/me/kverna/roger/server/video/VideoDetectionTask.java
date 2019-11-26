@@ -40,21 +40,19 @@ import static org.bytedeco.opencv.global.opencv_imgproc.cvSmooth;
 public class VideoDetectionTask implements VideoFeedListener, Runnable {
 
     private static final int DETECTION_TIMEOUT_FRAMES = 24 * 5;
+    private OpenCVFrameConverter.ToIplImage iplImageConverter;
+    private Java2DFrameConverter frameConverter;
 
     private BlockingQueue<MjpegFrame> frames;
     private boolean running = true;
-
     private int framesSinceDetection;
 
     private Camera camera;
     private Notifier notifier;
-
-    private OpenCVFrameConverter.ToIplImage iplImageConverter;
-    private Java2DFrameConverter frameConverter;
     private CvMemStorage storage;
 
     public VideoDetectionTask(Camera camera, Notifier notifier) {
-        this.frames = new LinkedBlockingQueue<>();
+        this.frames = new LinkedBlockingQueue<>(20);
         this.framesSinceDetection = 1;
         this.storage = CvMemStorage.create();
         this.iplImageConverter = new OpenCVFrameConverter.ToIplImage();
@@ -86,8 +84,7 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
     public void run() {
         try {
             while (running) {
-                byte[] frame = frames.take().getJpegBytes();
-                Mat mat = imdecode(new Mat(new BytePointer(frame), false), IMREAD_COLOR);
+                Mat mat = imdecode(new Mat(new BytePointer(frames.take().getJpegBytes()), false), IMREAD_COLOR);
                 IplImage image = new IplImage(mat);
 
                 CvSeq circles = detectCircles(image);
@@ -125,7 +122,6 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         cvSmooth(gray, gray);
 
         // Detect circles in the image
-
         return cvHoughCircles(gray, this.storage, CV_HOUGH_GRADIENT, 1, 100, 100, 80, 15, 500);
     }
 
