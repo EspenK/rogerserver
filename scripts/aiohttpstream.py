@@ -1,11 +1,11 @@
 import asyncio
-import time
 
 import argparse
 import gpiozero
 import io
 import picamera
 from aiohttp import web, MultipartWriter
+from threading import Thread
 
 routes = web.RouteTableDef()
 
@@ -13,6 +13,16 @@ routes = web.RouteTableDef()
 @routes.get('/stream')
 async def show_stream(request, state):
     return web.Response(text='<img src="stream.mjpg">', content_type='text/html')
+
+
+async def write_to_stream(frame, response):
+    with MultipartWriter('image/jpeg', boundary='FRAME') as writer:
+        writer.append(frame, {
+            'Content-Type': 'image/jpeg',
+            'Content-Length': len(frame)
+        })
+
+        await writer.write(response, close_boundary=False)
 
 
 @routes.get("/stream.mjpg")
@@ -28,14 +38,7 @@ async def stream_handler(request, state):
     try:
         while True:
             frame = await grab_frame(state)
-
-            with MultipartWriter('image/jpeg', boundary='FRAME') as writer:
-                writer.append(frame, {
-                    'Content-Type': 'image/jpeg',
-                    'Content-Length': len(frame)
-                })
-
-                await writer.write(response, close_boundary=False)
+            await write_to_stream(frame, response)
     finally:
         await response.write_eof()
         log(f'CLOSE: Connection from {request.remote}')
@@ -49,11 +52,11 @@ def capture(camera, state):
     log('starting camera capture')
     stream = io.BytesIO()
 
-    for frame in camera.capture_continuous(stream, format="jpeg", use_video_port=True):
+    for _ in camera.capture_continuous(stream, format="jpeg", use_video_port=True):
         if state['closed']:
             return
 
-        state['frame'] = frame.getvalue()
+        state['frame'] = stream.getvalue()
         state['event'].clear()
         state['event'].set()
 
@@ -137,9 +140,12 @@ async def main():
 
         # Warm up the camera
         camera.start_preview()
-        time.sleep(2)
+        await asyncio.sleep(2)
 
-        loop.run_in_executor(None, capture, camera, state)
+        # loop.run_in_executor(None, capture, camera, state)
+        capture_thread = Thread(target=capture, args=(camera, state))
+        capture_thread.daemon = True
+        capture_thread.start()
 
         runner = web.AppRunner(app)
         await runner.setup()
