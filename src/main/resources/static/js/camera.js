@@ -25,9 +25,10 @@ async function _showCameraList(container) {
 
     container.innerHTML = `
         <div class="padded">
-            <button class="small" onclick="location.href='#newcamera'" type="button">Add a new camera</button>
-            <button class="small" onclick="location.href='#newwebhook'" type="button">Add a new webhook url</button>
-            <button class="small" onclick="showWebhookList()" type="button">Show webhook urls</button>
+            <button class="" onclick="location.href='#newcamera'" type="button">Add a new camera</button>
+            <button class="" onclick="showCaptureList()" type="button">Show captures</button>
+            <button class="" onclick="location.href='#newwebhook'" type="button">Add a new webhook url</button>
+            <button class="" onclick="showWebhookList()" type="button">Show webhook urls</button>
         </div>
         </div>`;
 

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @ApiController("/api/capture")
 public class CaptureController {
@@ -32,7 +31,9 @@ public class CaptureController {
     }
 
     @GetMapping
-    public List<Long> getCaptureIds() {
-        return captureService.getCaptures().stream().map(Capture::getId).collect(Collectors.toList());
+    public List<Capture> getCaptureIds() {
+        List<Capture> captures = captureService.getCaptures();
+        captures.forEach(capture -> capture.setFrame(new byte[0]));
+        return captures;
     }
 }
