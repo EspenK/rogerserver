@@ -18,7 +18,6 @@ public class Capture {
 
     @Id @GeneratedValue private long id;
     private String cameraName;
-    @Lob
-    private byte[] frame;
+    @Lob private byte[] frame;
     @Temporal(TemporalType.TIMESTAMP) private Date timestamp;
 }

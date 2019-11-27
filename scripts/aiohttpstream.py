@@ -119,7 +119,6 @@ async def main():
                         help="The GPIO pin number following https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering")
     args = parser.parse_args()
 
-    loop = asyncio.get_running_loop()
     state = {
         'frame': None,
         'event': asyncio.Event(),
@@ -142,6 +141,7 @@ async def main():
         camera.start_preview()
         await asyncio.sleep(2)
 
+        # Run in a python Thread, to avoid stopping the async event loop
         # loop.run_in_executor(None, capture, camera, state)
         capture_thread = Thread(target=capture, args=(camera, state))
         capture_thread.daemon = True
