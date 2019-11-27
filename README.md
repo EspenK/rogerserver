@@ -1,3 +1,5 @@
 # ROGER Observers Guests Entering Residences
 
-ja det gjør han tenk på det
+Roger is a security camera system that detects circles.
+
+ROGER :robot: -> :green_circle: :warning:

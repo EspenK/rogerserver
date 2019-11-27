@@ -1,0 +1,11 @@
+me.kverna.roger.server
+me.kverna.roger.server.annotation
+me.kverna.roger.server.controller
+me.kverna.roger.server.data
+me.kverna.roger.server.data.webhook
+me.kverna.roger.server.notify
+me.kverna.roger.server.repository
+me.kverna.roger.server.resolver
+me.kverna.roger.server.security
+me.kverna.roger.server.service
+me.kverna.roger.server.video

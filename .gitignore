@@ -31,3 +31,5 @@ hs_err_pid*
 ### Project specific
 *.properties
 /src/main/java/me/kverna/roger/server/LoadDatabase.java
+!/docs/
+!/docs/*.zip
