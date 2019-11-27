@@ -11,6 +11,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+/**
+ * Service layer for managing users in the system.
+ */
 @Service
 public class UserService {
 

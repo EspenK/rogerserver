@@ -12,6 +12,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service layer for handling of frame captures in video detection.
+ */
 @Service
 public class CaptureService {
 
@@ -22,6 +25,14 @@ public class CaptureService {
         this.captureRepository = captureRepository;
     }
 
+    /**
+     * Store a new capture by the given camera with the given
+     * encoded JPEG frame.
+     *
+     * @param camera    the camera the capture was taken with
+     * @param jpegFrame the encoded JPEG frame to store
+     * @return the saved Capture object
+     */
     public Capture capture(Camera camera, byte[] jpegFrame) {
         Capture capture = new Capture();
         capture.setCameraName(camera.getName());
@@ -30,10 +41,21 @@ public class CaptureService {
         return captureRepository.save(capture);
     }
 
-    public List<Capture> getCaptures() {
+    /**
+     * Return a list of all captures in the repository.
+     *
+     * @return a list of all captures in the repository.
+     */
+    public List<Capture> findAllCaptures() {
         return captureRepository.findAll();
     }
 
+    /**
+     * Find a capture with the given id.
+     *
+     * @param id the id of the capture to find
+     * @return the found capture
+     */
     public Capture findCapture(long id) {
         Optional<Capture> capture = captureRepository.findById(id);
         if (capture.isEmpty()) {
@@ -43,6 +65,11 @@ public class CaptureService {
         return capture.get();
     }
 
+    /**
+     * Delete the capture with the given id, if it exists.
+     *
+     * @param id the id of the capture to delete
+     */
     public void deleteCapture(long id) {
         Capture capture = findCapture(id);
         captureRepository.delete(capture);

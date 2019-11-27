@@ -23,7 +23,7 @@ public interface VideoFeedListener {
     boolean isAlive();
 
     /**
-     * Called when the attached task stops.
+     * Cleanup and finish. Should be called when the attached task stops.
      */
     void stop();
 }

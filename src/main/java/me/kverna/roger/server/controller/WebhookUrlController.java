@@ -34,18 +34,18 @@ public class WebhookUrlController {
     @Authorized
     @DeleteMapping("/{id}")
     public void deleteWebhookUrl(@PathVariable Long id) {
-        service.deleteWebhookUrl(service.getWebhookUrl(id));
+        service.deleteWebhookUrl(id);
     }
 
     @Authorized
     @GetMapping
     public List<WebhookUrl> getAllWebhookUrl() {
-        return service.getAllWebhookUrls();
+        return service.findAllWebhookUrls();
     }
 
     @Authorized
     @GetMapping("/{id}")
     public WebhookUrl getWebhookUrl(@PathVariable Long id) {
-        return service.getWebhookUrl(id);
+        return service.findWebhookUrl(id);
     }
 }

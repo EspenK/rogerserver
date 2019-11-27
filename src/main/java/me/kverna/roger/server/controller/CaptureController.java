@@ -32,7 +32,7 @@ public class CaptureController {
 
     @GetMapping
     public List<Capture> getCaptureIds() {
-        List<Capture> captures = captureService.getCaptures();
+        List<Capture> captures = captureService.findAllCaptures();
         captures.forEach(capture -> capture.setFrame(new byte[0]));
         return captures;
     }

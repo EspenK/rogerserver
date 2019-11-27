@@ -5,6 +5,7 @@ import me.kverna.roger.server.repository.CameraRepository;
 import me.kverna.roger.server.video.VideoDetectionTask;
 import me.kverna.roger.server.video.VideoFeedListener;
 import me.kverna.roger.server.video.VideoFeedTask;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
@@ -21,10 +22,14 @@ import java.util.Optional;
  * Service layer for handling of Camera instances.
  *
  * This service has general repository functions, and handles executing the
- * background video stream tasks for each Camera instance. Background
- * tasks are executed automatically when cameras are created, and can
- * be connected to using `addConnection`. Stopping of a service is handled
+ * background video stream tasks for each Camera instance.
+ *
+ * Background tasks are executed automatically when cameras are created, and
+ * can be connected to using `addConnection`. Stopping of a service is handled
  * upon deletion of a Camera using `removeCamera`.
+ *
+ * New cameras added will both start a task for receiving video from the camera,
+ * and a detection task for detecting circles from the camera feed.
  */
 @Service
 public class CameraService {
@@ -34,6 +39,7 @@ public class CameraService {
     private TaskExecutor serviceExecutor;
     private NotifyService notifyService;
 
+    @Autowired
     public CameraService(CameraRepository cameraRepository, NotifyService notifyService, @Qualifier("serviceExecutor") TaskExecutor serviceExecutor) {
         this.cameraRepository = cameraRepository;
         this.captureTasks = new HashMap<>();
@@ -42,7 +48,8 @@ public class CameraService {
     }
 
     /**
-     * Executes a background task for the given camera and assigns it for handling listeners.
+     * Executes a background video feed task for the given camera and
+     * assigns it for handling listeners.
      *
      * @param camera the camera to start the new task with
      */
@@ -62,6 +69,12 @@ public class CameraService {
         captureTasks.get(camera).addListener(listener);
     }
 
+    /**
+     * Executes a background detection task for the given camera.
+     * This requires that a capture task has already been created.
+     *
+     * @param camera the camera to start the new task with
+     */
     public void startDetectionTask(Camera camera) {
         VideoDetectionTask task = new VideoDetectionTask(camera, notifyService);
         addConnection(camera, task);
@@ -82,11 +95,10 @@ public class CameraService {
 
         camera = cameraRepository.save(camera);
 
-        // Start a background task for the new camera
+        // Start a background video feed task for the new camera
         try {
             startCaptureTask(camera);
         } catch (MalformedURLException e) {
-            // FIXME: at this point, no transactions to the database should be performed
             cameraRepository.delete(camera);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("The generated URL %s is malformed", camera.getLocalStreamUrl()));
         }

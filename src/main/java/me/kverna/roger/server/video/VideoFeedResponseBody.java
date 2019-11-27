@@ -23,6 +23,10 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
     private BlockingQueue<byte[]> queue;
     private boolean running = true;
 
+    /**
+     * Create a new response body with a BlockingQueue with the capacity
+     * of holding 20 video frames at once.
+     */
     public VideoFeedResponseBody() {
         queue = new LinkedBlockingQueue<>(20);
     }
@@ -31,7 +35,7 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
      * Puts the given frame from the VideoFeedTask into a queue, which
      * can then be handled by `writeTo`.
      *
-     * @param frame a frame of video including the MJPEG boundary header
+     * @param frame an MJPEG frame of video
      */
     @Override
     public void process(MjpegFrame frame) {

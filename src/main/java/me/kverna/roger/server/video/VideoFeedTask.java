@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Long-lived task that connects to a camera's video stream
+ * and can relay the stream to other threads. It will stream
+ * the frames to any listeners by sending them one-by-one.
+ */
 @Log
 public class VideoFeedTask implements Runnable {
 
@@ -27,6 +32,12 @@ public class VideoFeedTask implements Runnable {
 
     private boolean running = true;
 
+    /**
+     * Create a video feed task to retrieve video from the given camera.
+     *
+     * @param camera the camera to retrieve video from
+     * @throws MalformedURLException if the camera's hostname or port is invalid
+     */
     public VideoFeedTask(Camera camera) throws MalformedURLException {
         this.camera = camera;
         this.url = new URL(camera.getLocalStreamUrl());
@@ -58,6 +69,7 @@ public class VideoFeedTask implements Runnable {
                 MjpegInputStream mjpegInputStream = new MjpegInputStream(openStream());
                 MjpegFrame frame;
 
+                // Stream all frames of video to every listener
                 while (running && (frame = mjpegInputStream.readMjpegFrame()) != null) {
                     sendToListeners(frame);
                 }

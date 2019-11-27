@@ -37,6 +37,12 @@ import static org.bytedeco.opencv.global.opencv_imgproc.cvCvtColor;
 import static org.bytedeco.opencv.global.opencv_imgproc.cvHoughCircles;
 import static org.bytedeco.opencv.global.opencv_imgproc.cvSmooth;
 
+/**
+ * A long-lived task for detecting circles in an attached video feed task.
+ * <p>
+ * In the future, this could use some interface implementation to handle
+ * different kinds of detection.
+ */
 public class VideoDetectionTask implements VideoFeedListener, Runnable {
 
     private static final int DETECTION_TIMEOUT_FRAMES = 24 * 5;
@@ -51,6 +57,14 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
     private Notifier notifier;
     private CvMemStorage storage;
 
+    /**
+     * Create a task for detecting video frames from the given camera.
+     * The notifier must be supplied in order to send notifications
+     * when detections are made.
+     *
+     * @param camera the camera the detection applies to
+     * @param notifier a notifier to send notifications to
+     */
     public VideoDetectionTask(Camera camera, Notifier notifier) {
         this.frames = new LinkedBlockingQueue<>(20);
         this.framesSinceDetection = 1;
@@ -62,6 +76,12 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         this.notifier = notifier;
     }
 
+    /**
+     * Puts the given frame from the VideoFeedTask into a queue, which
+     * can then be handled by the running thread.
+     *
+     * @param frame an MJPEG frame of video
+     */
     @Override
     public void process(MjpegFrame frame) {
         try {
@@ -71,11 +91,19 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         }
     }
 
+    /**
+     * Returns true when data is still being streamed.
+     *
+     * @return true when data is still being streamed
+     */
     @Override
     public boolean isAlive() {
         return running;
     }
 
+    /**
+     * Stops the response stream.
+     */
     public synchronized void stop() {
         running = false;
     }
@@ -84,19 +112,27 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
     public void run() {
         try {
             while (running) {
+                // Decode the next frame in the queue for performing OpenCV operations
                 Mat mat = imdecode(new Mat(new BytePointer(frames.take().getJpegBytes()), false), IMREAD_COLOR);
                 IplImage image = new IplImage(mat);
 
+                // Detect all and any circles in the frame
                 CvSeq circles = detectCircles(image);
 
                 if (circles.total() > 0) {
+
+                    // If circles are detected, only notify if it has been DETECTION_TIMEOUT_FRAMES
+                    // since the last detection
                     if (framesSinceDetection > 0) {
                         applyCircles(image, circles);
                         notifier.notify(camera, ":bell: Circle detected.", convertToJpeg(image));
                         notifier.buzz(camera, true);
                     }
 
+                    // Update the detection timeout
                     framesSinceDetection = -DETECTION_TIMEOUT_FRAMES;
+
+                    // The timeout is complete when the frame detection timeout reaches 0 (it goes from negative)
                 } else if (framesSinceDetection == 0) {
                     notifier.notify(camera, ":no_bell: Circle disappeared.");
                     notifier.buzz(camera, false);
@@ -109,6 +145,12 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         }
     }
 
+    /**
+     * Detect circles in the given image using Hough Circles algorithm.
+     *
+     * @param image the image to detect circles in.
+     * @return the sequence of detected circles
+     */
     private CvSeq detectCircles(IplImage image) {
         cvClearMemStorage(storage);
 
@@ -125,6 +167,12 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         return cvHoughCircles(gray, this.storage, CV_HOUGH_GRADIENT, 1, 100, 100, 80, 15, 500);
     }
 
+    /**
+     * Applies a sequence of circles to an image visually.
+     *
+     * @param image the image to apply circles to
+     * @param circles the circles to apply
+     */
     private void applyCircles(IplImage image, CvSeq circles) {
         for (int i = 0; i < circles.total(); i++) {
             CvPoint3D32f circle = new CvPoint3D32f(cvGetSeqElem(circles, i));
@@ -134,6 +182,12 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         }
     }
 
+    /**
+     * Convert the given image to JPEG encoded data.
+     *
+     * @param image the image to convert
+     * @return the JPEG encoded image
+     */
     private byte[] convertToJpeg(IplImage image) {
         BufferedImage bufferedImage = frameConverter.getBufferedImage(iplImageConverter.convert(image));
 
