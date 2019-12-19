@@ -1,5 +1,6 @@
 package me.kverna.roger.server.video;
 
+import lombok.Getter;
 import lombok.extern.java.Log;
 import me.kverna.roger.server.data.Camera;
 import net.sf.jipcam.axis.MjpegFrame;
@@ -28,7 +29,7 @@ public class VideoFeedTask implements Runnable {
 
     private Camera camera;
     private URL url;
-    private List<VideoFeedListener> videoFeedListeners;
+    @Getter private SharedFrame sharedFrame;
 
     private boolean running = true;
 
@@ -41,17 +42,7 @@ public class VideoFeedTask implements Runnable {
     public VideoFeedTask(Camera camera) throws MalformedURLException {
         this.camera = camera;
         this.url = new URL(camera.getLocalStreamUrl());
-        this.videoFeedListeners = new ArrayList<>();
-    }
-
-    /**
-     * Adds the given VideoFeedListener for output. This listener will be
-     * automatically removed when its `isAlive` method returns false.
-     *
-     * @param listener the VideoFeedListener to add to this service
-     */
-    public void addListener(VideoFeedListener listener) {
-        videoFeedListeners.add(listener);
+        this.sharedFrame = new SharedFrame();
     }
 
     /**
@@ -71,7 +62,7 @@ public class VideoFeedTask implements Runnable {
 
                 // Stream all frames of video to every listener
                 while (running && (frame = mjpegInputStream.readMjpegFrame()) != null) {
-                    sendToListeners(frame);
+                    sharedFrame.send(frame);
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -80,10 +71,8 @@ public class VideoFeedTask implements Runnable {
 
         log.info(String.format("Stopping %s: %s", camera.getName(), camera.getLocalStreamUrl()));
 
-        // Stop all attached listeners
-        for (VideoFeedListener listener : videoFeedListeners) {
-            listener.stop();
-        }
+        // Show that the process is stopped by setting the frame to null
+        sharedFrame.send(null);
     }
 
     /**
@@ -100,24 +89,6 @@ public class VideoFeedTask implements Runnable {
             } catch (IOException e) {
                 log.warning(String.format("Could not open connection to %s. Retrying in %d seconds.", camera.getLocalStreamUrl(), RECONNECT_SLEEP));
                 Thread.sleep(RECONNECT_SLEEP * 1000);
-            }
-        }
-    }
-
-    /**
-     * Send the given chunk to every listener. Any dead listeners will be removed.
-     *
-     * @param frame an MJPEG frame to send to all listeners
-     */
-    private void sendToListeners(MjpegFrame frame) {
-        Iterator<VideoFeedListener> it = videoFeedListeners.iterator();
-        while (it.hasNext()) {
-            VideoFeedListener listener = it.next();
-
-            if (listener.isAlive()) {
-                listener.process(frame);
-            } else {
-                it.remove();
             }
         }
     }

@@ -2,8 +2,8 @@ package me.kverna.roger.server.service;
 
 import me.kverna.roger.server.data.Camera;
 import me.kverna.roger.server.repository.CameraRepository;
+import me.kverna.roger.server.video.SharedFrame;
 import me.kverna.roger.server.video.VideoDetectionTask;
-import me.kverna.roger.server.video.VideoFeedListener;
 import me.kverna.roger.server.video.VideoFeedTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -59,14 +59,8 @@ public class CameraService {
         serviceExecutor.execute(task);
     }
 
-    /**
-     * Assign a listener to the background task for the given camera.
-     *
-     * @param camera the camera that has the desired task
-     * @param listener the new listener to assign to the camera's task
-     */
-    public void addConnection(Camera camera, VideoFeedListener listener) {
-        captureTasks.get(camera).addListener(listener);
+    public SharedFrame getSharedFrame(Camera camera) {
+        return captureTasks.get(camera).getSharedFrame();
     }
 
     /**
@@ -76,8 +70,7 @@ public class CameraService {
      * @param camera the camera to start the new task with
      */
     public void startDetectionTask(Camera camera) {
-        VideoDetectionTask task = new VideoDetectionTask(camera, notifyService);
-        addConnection(camera, task);
+        VideoDetectionTask task = new VideoDetectionTask(camera, getSharedFrame(camera), notifyService);
         serviceExecutor.execute(task);
     }
 

@@ -6,8 +6,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * A StreamingResponseBody implementation that uses data provided by
@@ -18,32 +16,16 @@ import java.util.concurrent.LinkedBlockingQueue;
  * `isAlive` will return false.
  */
 @ToString
-public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedListener {
+public class VideoFeedResponseBody implements StreamingResponseBody {
 
-    private BlockingQueue<byte[]> queue;
-    private boolean running = true;
+    private SharedFrame sharedFrame;
 
     /**
      * Create a new response body with a BlockingQueue with the capacity
      * of holding 20 video frames at once.
      */
-    public VideoFeedResponseBody() {
-        queue = new LinkedBlockingQueue<>(20);
-    }
-
-    /**
-     * Puts the given frame from the VideoFeedTask into a queue, which
-     * can then be handled by `writeTo`.
-     *
-     * @param frame an MJPEG frame of video
-     */
-    @Override
-    public void process(MjpegFrame frame) {
-        try {
-            queue.put(frame.getBytes());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public VideoFeedResponseBody(SharedFrame sharedFrame) {
+        this.sharedFrame = sharedFrame;
     }
 
     /**
@@ -54,30 +36,18 @@ public class VideoFeedResponseBody implements StreamingResponseBody, VideoFeedLi
      */
     @Override
     public void writeTo(OutputStream outputStream) {
+        MjpegFrame frame;
+
         try {
-            while (running) {
-                outputStream.write(queue.take());
+            while (true) {
+                frame = sharedFrame.receive();
+                if (frame == null) {
+                    return;
+                }
+
+                outputStream.write(frame.getBytes());
             }
-        } catch (InterruptedException | IOException ignored) {
-        } finally {
-            stop();
+        } catch (IOException ignored) {
         }
-    }
-
-    /**
-     * Returns true when data is still being streamed.
-     *
-     * @return true when data is still being streamed
-     */
-    @Override
-    public boolean isAlive() {
-        return running;
-    }
-
-    /**
-     * Stops the response stream.
-     */
-    public synchronized void stop() {
-        running = false;
     }
 }

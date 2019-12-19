@@ -56,8 +56,7 @@ public class CameraController {
         Camera camera = cameraService.findCamera(cameraId);
 
         // Create a response stream and add it to the associated background task
-        VideoFeedResponseBody stream = new VideoFeedResponseBody();
-        cameraService.addConnection(camera, stream);
+        VideoFeedResponseBody stream = new VideoFeedResponseBody(cameraService.getSharedFrame(camera));
 
         response.setContentType("multipart/x-mixed-replace; boundary=FRAME");
         return new ResponseEntity<>(stream, HttpStatus.OK);

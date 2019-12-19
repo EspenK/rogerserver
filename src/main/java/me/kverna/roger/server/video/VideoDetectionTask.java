@@ -43,14 +43,13 @@ import static org.bytedeco.opencv.global.opencv_imgproc.cvSmooth;
  * In the future, this could use some interface implementation to handle
  * different kinds of detection.
  */
-public class VideoDetectionTask implements VideoFeedListener, Runnable {
+public class VideoDetectionTask implements Runnable {
 
     private static final int DETECTION_TIMEOUT_FRAMES = 24 * 5;
     private OpenCVFrameConverter.ToIplImage iplImageConverter;
     private Java2DFrameConverter frameConverter;
 
-    private BlockingQueue<MjpegFrame> frames;
-    private boolean running = true;
+    private SharedFrame sharedFrame;
     private int framesSinceDetection;
 
     private Camera camera;
@@ -65,9 +64,9 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
      * @param camera the camera the detection applies to
      * @param notifier a notifier to send notifications to
      */
-    public VideoDetectionTask(Camera camera, Notifier notifier) {
-        this.frames = new LinkedBlockingQueue<>(20);
-        this.framesSinceDetection = 1;
+    public VideoDetectionTask(Camera camera, SharedFrame sharedFrame, Notifier notifier) {
+        this.sharedFrame = sharedFrame;
+        this.framesSinceDetection = DETECTION_TIMEOUT_FRAMES + 1;
         this.storage = CvMemStorage.create();
         this.iplImageConverter = new OpenCVFrameConverter.ToIplImage();
         this.frameConverter = new Java2DFrameConverter();
@@ -76,72 +75,43 @@ public class VideoDetectionTask implements VideoFeedListener, Runnable {
         this.notifier = notifier;
     }
 
-    /**
-     * Puts the given frame from the VideoFeedTask into a queue, which
-     * can then be handled by the running thread.
-     *
-     * @param frame an MJPEG frame of video
-     */
-    @Override
-    public void process(MjpegFrame frame) {
-        try {
-            frames.put(frame);
-        } catch (InterruptedException e) {
-            stop();
-        }
-    }
-
-    /**
-     * Returns true when data is still being streamed.
-     *
-     * @return true when data is still being streamed
-     */
-    @Override
-    public boolean isAlive() {
-        return running;
-    }
-
-    /**
-     * Stops the response stream.
-     */
-    public synchronized void stop() {
-        running = false;
-    }
-
     @Override
     public void run() {
-        try {
-            while (running) {
-                // Decode the next frame in the queue for performing OpenCV operations
-                Mat mat = imdecode(new Mat(new BytePointer(frames.take().getJpegBytes()), false), IMREAD_COLOR);
-                IplImage image = new IplImage(mat);
+        MjpegFrame frame;
 
-                // Detect all and any circles in the frame
-                CvSeq circles = detectCircles(image);
+        while (true) {
+            // Decode the next frame in the queue for performing OpenCV operations
+            frame = sharedFrame.receive();
+            if (frame == null) {
+                return;
+            }
 
-                if (circles.total() > 0) {
+            Mat mat = imdecode(new Mat(new BytePointer(frame.getJpegBytes()), false), IMREAD_COLOR);
+            IplImage image = new IplImage(mat);
 
-                    // If circles are detected, only notify if it has been DETECTION_TIMEOUT_FRAMES
-                    // since the last detection
-                    if (framesSinceDetection > 0) {
-                        applyCircles(image, circles);
-                        notifier.notify(camera, ":bell: Circle detected.", convertToJpeg(image));
-                        notifier.buzz(camera, true);
-                    }
+            // Detect all and any circles in the frame
+            CvSeq circles = detectCircles(image);
 
-                    // Update the detection timeout
-                    framesSinceDetection = -DETECTION_TIMEOUT_FRAMES;
+            if (circles.total() > 0) {
 
-                    // The timeout is complete when the frame detection timeout reaches 0 (it goes from negative)
-                } else if (framesSinceDetection == 0) {
-                    notifier.notify(camera, ":no_bell: Circle disappeared.");
-                    notifier.buzz(camera, false);
+                // If circles are detected, only notify if it has been DETECTION_TIMEOUT_FRAMES
+                // since the last detection
+                if (framesSinceDetection > DETECTION_TIMEOUT_FRAMES) {
+                    applyCircles(image, circles);
+                    notifier.notify(camera, ":bell: Circle detected.", convertToJpeg(image));
+                    notifier.buzz(camera, true);
                 }
 
-                framesSinceDetection++;
+                // Update the detection timeout
+                framesSinceDetection = 0;
+
+                // The timeout is complete when the frame detection timeout reaches 0 (it goes from negative)
+            } else if (framesSinceDetection == DETECTION_TIMEOUT_FRAMES) {
+                notifier.notify(camera, ":no_bell: Circle disappeared.");
+                notifier.buzz(camera, false);
             }
-        } catch (InterruptedException e) {
-            stop();
+
+            framesSinceDetection++;
         }
     }
 
